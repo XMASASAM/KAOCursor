@@ -1,0 +1,23 @@
+﻿<UserControl x:Class="KC2.Controls.MakeSquareView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:KC2.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800" Loaded="UserControl_Loaded">
+	<Grid x:Name="P">
+		<Canvas x:Name="canvas" Width="{Binding ElementName=P,Path=ActualWidth}" Height="{Binding ElementName=P,Path=ActualHeight}" SizeChanged="canvas_SizeChanged">
+			<Thumb x:Name="tracker" Background="Transparent" DragStarted="tracker_DragStarted" Canvas.Top="0" Canvas.Left="0" DragDelta="tracker_DragDelta">
+				<Thumb.Template>
+					<ControlTemplate>
+						<Border Background="{Binding RelativeSource={RelativeSource AncestorType=Thumb},Path=Background}"/>
+					</ControlTemplate>
+				</Thumb.Template>
+			</Thumb>
+			<Border x:Name="border" BorderBrush="Red" BorderThickness="2" IsHitTestVisible="False" Visibility="Hidden"/>
+			<Border x:Name="tracker_o" Width="16" Height="16" Background="Red" IsHitTestVisible="False" Visibility="Hidden"/>
+
+		</Canvas>
+	</Grid>
+</UserControl>
