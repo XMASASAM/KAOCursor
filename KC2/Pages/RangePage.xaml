@@ -1,0 +1,37 @@
+﻿<Page x:Class="KC2.Pages.RangePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:KC2.Pages"
+      xmlns:controls="clr-namespace:KC2.Controls"
+	  mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="RangePage" d:Background="White" IsVisibleChanged="Page_IsVisibleChanged">
+
+    <Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="1*" MinHeight="100"/>
+			<RowDefinition Height="2*"/>
+		</Grid.RowDefinitions>
+
+		<Grid Grid.Row="0">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="2*"/>
+				<ColumnDefinition Width="*"/>
+				<ColumnDefinition Width="2*"/>
+			</Grid.ColumnDefinitions>
+			<Button x:Name="ReturnButton" Grid.Column="0" Content="戻る"  Click="ReturnButton_Click"/>
+
+			<Label Grid.Column="1" Content="可動域設定"  VerticalAlignment="Center" HorizontalAlignment="Center"/>
+			<Button Grid.Column="2" x:Name="StartButton" Content="Start" Click="StartButton_Click"/>
+
+
+		</Grid>
+
+		<Grid Grid.Row="1">
+			<controls:CaptureDeviceView x:Name="CameraView"/>
+		</Grid>
+
+	</Grid>
+</Page>

@@ -10,7 +10,44 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Images\PC.png" />
+    <None Remove="Images\PC_CC.png" />
+    <None Remove="Images\PC_LB.png" />
+    <None Remove="Images\PC_LT.png" />
+    <None Remove="Images\PC_RB.png" />
+    <None Remove="Images\PC_RT.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Images\PC_RT.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Images\PC.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\PC_CC.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\PC_LB.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\PC_LT.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\PC_RB.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\KC2NativeWrapper\KC2NativeWrapper.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="新しいフォルダー\" />
   </ItemGroup>
 
 </Project>

@@ -15,7 +15,7 @@ namespace KC2NativeWrapper
 	{
 		public int Width { get; set; }
 		public int Height { get; set; }
-		public int Format { get; set; }//mjpeg
+		public int Format { get; set; }
 		public double FPS { get; set; }
 
 	}

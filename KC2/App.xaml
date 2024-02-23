@@ -4,6 +4,10 @@
              xmlns:local="clr-namespace:KC2"
              StartupUri="MainWindow.xaml" Startup="Application_Startup" Exit="Application_Exit">
     <Application.Resources>
-         
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="Images\ReadImages.xaml"/>
+			</ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

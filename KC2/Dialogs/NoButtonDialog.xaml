@@ -1,0 +1,17 @@
+﻿<Window x:Class="KC2.Dialogs.NoButtonDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:KC2.Dialogs"
+        mc:Ignorable="d"
+        Title="NoButtonDialog" Height="150" Width="300" Loaded="Window_Loaded" Topmost="True">
+    <Grid>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="1*"/>
+			<ColumnDefinition Width="2*"/>
+		</Grid.ColumnDefinitions>
+		<Image x:Name="Image1" Margin="5"/>
+		<TextBlock Grid.Column="1" x:Name="Text1" Margin="5" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16"/>
+	</Grid>
+</Window>

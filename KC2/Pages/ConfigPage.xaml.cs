@@ -42,7 +42,7 @@ namespace KC2.Pages
 			private set { SetValue(ResolutionListProperty, value); }
 		}
 
-		public List<double> AngleList { get; private set; } = new List<double>(){0,90,180,270};
+		public List<int> AngleList { get; private set; } = new List<int>(){0,90,180,270};
 
 
 		SaveData config;
@@ -59,16 +59,37 @@ namespace KC2.Pages
 			if (0 <= index)
 			{
 				DeviceComboBox.SelectedIndex = index;
-				CameraPreviewView.StartCapture(index);
-				CameraPreviewView.Angle = config.CameraAngle;
-				CameraPreviewView.ScaleX = config.CameraScaleX;
-				CameraPreviewView.ScaleY = config.CameraScaleY;
+			//	CameraPreviewView.StartCapture(index);
 			}
 			KC2DeviceInformation.Init();
 			DeviceList = KC2DeviceInformation.DeviceList;
-	//		this.config = mainPage.Config;
-//			KC2DeviceInformation.DeviceList[0].GetVideoInfo(0).
+
 		}
+		private void Page_Loaded(object sender, RoutedEventArgs e)
+		{
+			//			ResolutionComboBox.SelectedIndex = ResolutionList.Find()
+			ApplyResolution();
+
+			TransposeComboBox.SelectedIndex = AngleList.IndexOf(config.CaptureProperty.Angle);
+			TurnComboBox.SelectedIndex = config.CaptureProperty.HorizonFlip;
+		}
+
+		void ApplyResolution(){
+			//VideoCaptureDevice? d = CameraPreviewView.GetVideoCaptureDevice();
+			
+			if (!CaptureDevice.IsOpened) return;
+			CaptureProperty cap = CaptureDevice.Property;
+			for (int i = 0; i < ResolutionList.Count(); i++)
+			{
+				var j = ResolutionList[i];
+				if (j.Width == cap.Width && j.Height == cap.Height)
+				{
+					ResolutionComboBox.SelectedIndex = i;
+					break;
+				}
+			}
+		}
+
 
 		private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
@@ -78,31 +99,38 @@ namespace KC2.Pages
 				int index = comboBox.SelectedIndex;
 				if (index != -1)
 				{
-					mainPage.ChangeCaptureView(index);
+					//mainPage.ChangeCaptureView(index,config.CaptureProperty);
 
-					CameraPreviewView.StartCapture(index);
+					//CameraPreviewView.StartCapture(index,config.CaptureProperty);
+					if(CaptureDevice.GetCurrentIndex()!=index)
+						CaptureDevice.Open(index,config.CaptureProperty);
+
 					ResolutionList.Clear();
 					var dinfo = KC2DeviceInformation.DeviceList[index];
-					Dictionary<Vec2I,VideoInfo> dc = new Dictionary<Vec2I,VideoInfo>();
+					Dictionary<Vec2I, VideoInfo> dic = new Dictionary<Vec2I, VideoInfo>();
 					for (int i = 0; i < dinfo.VideoInfoListSize; i++)
 					{
 						var vinfo = dinfo.GetVideoInfo(i);
-						Vec2I vs = new Vec2I(vinfo.Width , vinfo.Height);
-						if(!dc.ContainsKey(vs)){
-							dc.Add(vs, vinfo );
+						Vec2I s = new(vinfo.Width, vinfo.Height);
+						if (dic.ContainsKey(s))
+						{
+							if (vinfo.FPS < dic[s].FPS) continue;
+							dic[s] = vinfo;
 						}
-						if(dc[vs].FPS < vinfo.FPS)dc[vs] = vinfo;
+						else
+						{
+							dic.Add(s, vinfo);
+						}
 					}
 
-					foreach(var i in dc){
+					foreach (var i in dic){
 						ResolutionList.Add(i.Value);
 					}
-
 					ResolutionComboBox.Items.Refresh();
 					config.DeviceName = dinfo.Name;
 					config.DevicePath = dinfo.Path;
-					//config.DeviceSize = new Vec2I(-1,-1);
 
+					ApplyResolution();
 				}
 			}
 		}
@@ -110,20 +138,34 @@ namespace KC2.Pages
 		private void ResolutionComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			ComboBox cb = sender as ComboBox;
+
+			 
+
 			if (cb != null) {
 				if (cb.SelectedIndex == -1) return;
 				VideoInfo vi = (VideoInfo)cb.SelectedItem;
-				config.DeviceSize = new(vi.Width, vi.Height);
-				
-				mainPage.ReleaseCaptureView();
-				CameraPreviewView.ReleaseCapture();
-				
-				CaptureProperty prop = new CaptureProperty {
-					Width = vi.Width, Height = vi.Height, FlagFpsOption = 1
-				};
-				mainPage.ChangeCaptureView(DeviceComboBox.SelectedIndex, prop);
-				CameraPreviewView.StartCapture(DeviceComboBox.SelectedIndex,prop);
 
+				if(vi.Width==config.CaptureProperty.Width && vi.Height==config.CaptureProperty.Height) {
+					return;
+				}
+
+				//config.DeviceSize = new(vi.Width, vi.Height);
+				
+				//mainPage.ReleaseCaptureView();
+				//CameraPreviewView.ReleaseCapture();
+
+				CaptureProperty prop = config.CaptureProperty;//new CaptureProperty {
+															  //	Width = vi.Width, Height = vi.Height, FlagFpsOption = 1
+															  //};
+				prop.Width = vi.Width;
+				prop.Height = vi.Height;
+				
+				config.CaptureProperty = prop;
+
+
+				//mainPage.ChangeCaptureView(DeviceComboBox.SelectedIndex, prop);
+				//CameraPreviewView.StartCapture(DeviceComboBox.SelectedIndex,prop);
+				CaptureDevice.Open(DeviceComboBox.SelectedIndex, prop);
 			}
 		}
 
@@ -139,32 +181,51 @@ namespace KC2.Pages
 
 			}else{
 				App app = (App)Application.Current;
-				config.CameraAngle = CameraPreviewView.Angle;
-				config.CameraScaleX = CameraPreviewView.ScaleX;
-				config.CameraScaleY = CameraPreviewView.ScaleY;
 				if (!config.Equals(app.SaveData))
 				{
 					
 					app.SetSaveData(config);
 				}
-				CameraPreviewView.ReleaseCapture();
+				//CameraPreviewView.ReleaseCapture();
+				CameraPreviewView.Stop();
 			}
 		}
 
 		private void TransposeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			double d = (double)(TransposeComboBox.SelectedItem);
-			CameraPreviewView.Angle = d;
-        }
+			int d = (int)(TransposeComboBox.SelectedItem);
+			var prop = config.CaptureProperty;
+
+			if (prop.Angle == d) return;
+
+			prop.Angle = d;
+			config.CaptureProperty = prop;
+			//CameraPreviewView.GetVideoCaptureDevice().ChangeFlip(prop.Angle,prop.HorizonFlip);
+			CaptureDevice.ChangeFlip(prop.Angle, prop.HorizonFlip);
+		}
 
 		private void TurnComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			if(TurnComboBox.SelectedIndex==0) {
-				CameraPreviewView.ScaleX = -1;
-			}
-			if(TurnComboBox.SelectedIndex==1) {
-				CameraPreviewView.ScaleX = 1;
-			}
+
+			int d = TurnComboBox.SelectedIndex;
+			var prop = config.CaptureProperty;
+
+			if(prop.HorizonFlip == d) return;
+
+			prop.HorizonFlip = d;
+			config.CaptureProperty = prop;
+			CaptureDevice.ChangeFlip(prop.Angle, prop.HorizonFlip);
+
+			//CameraPreviewView.GetVideoCaptureDevice().ChangeFlip(prop.Angle, prop.HorizonFlip);
+			/*
+				if(TurnComboBox.SelectedIndex==0) {
+					CameraPreviewView.ScaleX = -1;
+				}
+				if(TurnComboBox.SelectedIndex==1) {
+					CameraPreviewView.ScaleX = 1;
+				}*/
 		}
+
+
 	}
 }

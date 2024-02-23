@@ -1,9 +1,11 @@
 #include"kc2.h"
-#include<opencv2/opencv.hpp>
+#include"tracker.h"
+#include<Windows.h>
+using namespace std;
+using namespace cv;
 
 namespace kc2 {
-	using namespace std;
-	using namespace cv;
+
 
 	enum YuNetProperty {
 		YuNet_X, YuNet_Y,
@@ -15,6 +17,38 @@ namespace kc2 {
 		YuNet_LEFT_MOUSE_X, YuNet_LEFT_MOUSE_Y,
 		YuNet_FACE_SCORE
 	};
+
+	struct YuNetLandMark
+	{
+		Point2d pos;
+		Point2d size;
+		Point2d right_eye;
+		Point2d left_eye;
+		Point2d nose;
+		Point2d right_mouse;
+		Point2d left_mouse;
+		double score;
+
+		YuNetLandMark(Mat face) {
+			pos.x = face.at<float>(YuNet_X);
+			pos.y = face.at<float>(YuNet_Y);
+			size.x = face.at<float>(YuNet_WIDTH);
+			size.y = face.at<float>(YuNet_HEIGHT);
+			right_eye.x = face.at<float>(YuNet_RIGHT_EYE_X);
+			right_eye.y = face.at<float>(YuNet_RIGHT_EYE_Y);
+			left_eye.x = face.at<float>(YuNet_LEFT_EYE_X);
+			left_eye.y = face.at<float>(YuNet_LEFT_EYE_Y);
+			nose.x = face.at<float>(YuNet_NOSE_X);
+			nose.y = face.at<float>(YuNet_NOSE_Y);
+			right_mouse.x = face.at<float>(YuNet_RIGHT_MOUSE_X);
+			right_mouse.y = face.at<float>(YuNet_RIGHT_MOUSE_Y);
+			left_mouse.x = face.at<float>(YuNet_LEFT_MOUSE_X);
+			left_mouse.y = face.at<float>(YuNet_LEFT_MOUSE_Y);
+			score = face.at<float>(YuNet_FACE_SCORE);
+		}
+
+	};
+
 
 	bool find_main_face(cv::Mat& face, cv::Rect* main_face_rect) {
 		int max_area = 0;
@@ -31,6 +65,41 @@ namespace kc2 {
 			}
 		}
 		return face.rows;
+	}
+
+	bool find_main_face(Mat faces,Mat& dst) {
+		if(!faces.rows)return false;
+		int max_area = 0;
+		int ans=0;
+		for (int i = 0; i < faces.rows; i++) {
+			int w = faces.at<float>(i, YuNet_WIDTH);
+			int h = faces.at<float>(i, YuNet_HEIGHT);
+			int current_area = w * h;
+			if (max_area < current_area) {
+				max_area = current_area;
+				ans = i;
+			}
+		}
+		dst = faces.row(ans);
+		return true;
+	}
+
+
+	Point2d get_center_point_from_face(cv::Mat&face) {
+		int max_area = 0;
+		Point2d cp;
+		for (int i = 0; i < face.rows; i++) {
+			int w = face.at<float>(i, YuNet_WIDTH);
+			int h = face.at<float>(i, YuNet_HEIGHT);
+			int current_area = w * h;
+			if (max_area < current_area) {
+				max_area = current_area;
+				cp.x = (face.at<float>(i, YuNet_RIGHT_EYE_X) + face.at<float>(i, YuNet_LEFT_EYE_X))*.5;
+				cp.y = (face.at<float>(i, YuNet_RIGHT_EYE_Y) + face.at<float>(i, YuNet_LEFT_EYE_Y))*.5;
+
+			}
+		}
+		return cp;
 	}
 
 
@@ -59,46 +128,39 @@ namespace kc2 {
 	}
 
 
-class Tracker {
-	private:
-		const string model_path = "C:\\Users\\MaMaM\\source\\repos\\KC2\\KC2NativeProject\\face_detection_yunet_2023mar.onnx";
-
-		int cw;
-		int ch;
-		Ptr<FaceDetectorYN> yn_ptr;
-		bool is_first=true;
-		Rect trect;
-		vector<Point2f> cors;
-		Mat crop;
-		Point2d p{0,0};
-		Point2d del;
-		Point2d acc;
-		Rect pre_trect;
-		Rect clip_rect;
-		int max_points;
-		bool get_face_rect(Mat cmat,Rect* ans) {
+		bool kc2::Tracker::get_face_rect(Mat cmat,Rect* ans,Point2d* cp) {
 			Mat face;
 //			Rect ans;
 			(*yn_ptr).detect(cmat, face);
 			if(!face.rows)return false;
-			find_main_face(face, ans);
+			bool ss = find_main_face(face, ans);
+			if(!ss)return false;
+			*cp = get_center_point_from_face(face);
 			*ans = rect_resize(*ans,.9);
+			*ans = rect_range(*ans, { 0,0,cmat.cols,cmat.rows });
+
+			cp->x -= ans->x;
+			cp->y -= ans->y;
+
 			return true;
 		}
 
-		void init(Mat mat,Mat gmat) {
+		bool kc2::Tracker::init(Mat mat,Mat gmat) {
 			
-			get_face_rect(mat,&trect);
-			trect = rect_range(trect, { 0,0,gmat.cols,gmat.rows });
+			if(get_face_rect(mat,&trect,&center_point)){
+				//trect = rect_range(trect, { 0,0,gmat.cols,gmat.rows });
 
-			pre_trect = trect;
-			crop = Mat(gmat, trect);
-			goodFeaturesToTrack(crop, cors, max_points, 0.1, 10);
-			p.x = trect.x;
-			p.y = trect.y;
+				//pre_trect = trect;
+				crop = Mat(gmat, trect);
+				goodFeaturesToTrack(crop, cors, max_points, 0.1, 10);
+				p.x = trect.x;
+				p.y = trect.y;
+				return true;
+			}
+			return false;
 		}
 
-		double IoU(Rect a,Rect b,Rect*u) {
+		double kc2::Tracker::IoU(Rect a,Rect b,Rect*u) {
 			
 			u->x = max(a.x, b.x);
 			u->y = max(a.y,b.y);
@@ -110,14 +172,16 @@ class Tracker {
 			return (u->area()) / (double)(a.area());
 		}
 
-	public:
-	Tracker(int cap_width,int cap_height,int max_p):max_points(max_p) {
-		cw = cap_width;
-		ch = cap_height;
-		yn_ptr = cv::FaceDetectorYN::create(model_path, "",{cw,ch});
-	}
+	
+		kc2::Tracker::Tracker(int cap_width,int cap_height,int max_p):max_points(max_p) {
+			cw = cap_width;
+			ch = cap_height;
+			yn_ptr = cv::FaceDetectorYN::create(model_path, "",{cw,ch});
+			cas.load("C:\\Users\\MaMaM\\Documents\\Programs\\C++\\cascades\\haarcascade_mcs_nose.xml");
+			//cas.load("C:\\Users\\MaMaM\\Documents\\Programs\\C++\\opencv\\sources\\data\\haarcascades\\haarcascade_frontalface_default.xml");
+		}
 
-	void change(int cap_width, int cap_height, int max_p) {
+	void kc2::Tracker::change(int cap_width, int cap_height, int max_p) {
 		cw = cap_width;
 		ch = cap_height;
 		(*yn_ptr).~FaceDetectorYN();
@@ -126,206 +190,192 @@ class Tracker {
 		trect={0,0,0,0};
 		cors.clear();
 		p = { 0,0 };
-		del = {0,0};
+		del = { 0,0 };
+		//face_del = {0,0};
 		acc = {0,0};
-		pre_trect = {0,0,0,0};
+		//pre_trect = {0,0,0,0};
 		clip_rect = {0,0,0,0};
 		max_points = max_p;
 	}
 
-	void input(Mat mat) {
+	bool detect_safe_face(Mat mat,const YuNetLandMark& mk) {
+
+		auto v1 = mk.nose - mk.right_mouse;
+		auto v2 = mk.left_mouse - mk.right_mouse;
+		auto bias_m = v1.dot(v2) / (v2.dot(v2));
+
+		auto v3 = mk.nose - mk.right_eye;
+		auto v4 = mk.left_eye - mk.right_eye;
+		auto bias_e = v3.dot(v4) / (v4.dot(v4));
+
+		auto bias = bias_e + bias_m;
+
+		bool is_out = false;
+		if (mk.pos.x < 0 || mk.pos.y < 0)is_out = true;
+		if (mat.cols <= mk.pos.x + mk.size.x || mat.rows <= mk.pos.y + mk.size.y)is_out = true;
+		
+		putText(mat, to_string(bias), { 0,100 }, 0, 1, { 0,0,255 });
+
+		if(bias <= 0.8 || 1.2 <= bias) return false;
+		if(is_out)return false;
+
+		return true;
+	}
+
+	bool kc2::Tracker::input(Mat mat) {
 		Mat gmat;
 		cvtColor(mat, gmat, COLOR_BGR2GRAY);
+		//Rect face;
+		bool track_ok = false;
+		if (is_op_active && cors.size()) {
+			std::vector<cv::Point2f> cors2;
+			vector<Point2f> tcors;
+			vector<uchar> status;
+			vector<float> err;
 
+			auto pre_crop = crop;
 
-		if (is_first) {
-			is_first = false;
-			init(mat,gmat);
-		}
-
-		Mat pre_crop = crop;
-
-		trect.x = max(0, min(trect.x, gmat.cols - trect.width));
-		trect.y = max(0, min(trect.y, gmat.rows - trect.height));
-		clip_rect = trect;
-		crop = Mat(gmat,trect);
-
-
-
-		std::vector<cv::Point2f> cors2;
-		vector<Point2f> tcors;
-		vector<uchar> status;
-		vector<float> err;
-		auto pre_p = p;
-		auto pre_del = del;
-		del={0,0};
-
-		if(cors.size()){
+			crop = Mat(gmat,clip_rect);
+			trect = clip_rect;
 			calcOpticalFlowPyrLK(pre_crop, crop, cors, cors2, status, err);
-
+			auto del_prev = del;
+			del={0,0};
 			for (int i = 0; i < cors.size(); i++) {
 				if (status[i]) {
 					tcors.push_back(cors2[i]);
 					del.x += cors2[i].x - cors[i].x;
-					del.y+=cors2[i].y - cors[i].y;
+					del.y += cors2[i].y - cors[i].y;
 				}
 			}
-
 			cors = tcors;
-			del.x /= tcors.size();
-			del.y /= tcors.size();
-
-			del.x += trect.x - pre_trect.x;
-			del.y += trect.y - pre_trect.y;
-
-			p.x += del.x;
-			p.y += del.y;
-		}
-
-		acc = del - pre_del;
-
-		if (tcors.size() < 6) {
-			Rect frect; 
-			if(get_face_rect(mat,&frect)){
-				frect = rect_range(frect,{0,0,gmat.cols,gmat.rows});
-				Rect urect;
-				double iou = IoU(frect,trect,&urect);
-
-				Rect crect = urect;
-				bool is_flush=false;
-				if (iou <= .4) {
-					crect = frect;
-					is_flush = true;
-				}
 			
-				Mat crop2(gmat,crect);
-				cors.clear();
-				goodFeaturesToTrack(crop2, cors, max_points, 0.1, 10);
+			if(cors.size()){
+				del.x /= tcors.size();
+				del.y /= tcors.size();
+				
+				del.x += clip_rect.x - clip_p_prev.x;
+				del.y += clip_rect.y - clip_p_prev.y;
+				track_ok|=true;
 
-				if (is_flush) {
-					trect = crect;
-					p.x = crect.x;
-					p.y = crect.y;
-					crop = crop2;
-					del={0,0};
-				}else{
-					for (auto& i : cors) {
-						i.x += trect.x - crect.x;
-						i.y+=trect.y - crect.y;
-					}
-			
-					p = pre_p;
-				}
+				acc = del - del_prev;
+
+			}
+			else {
+				del={0,0};
+				acc={0,0};
 			}
 
+			clip_p_prev.x = clip_rect.x;
+			clip_p_prev.y = clip_rect.y;
+
+			p += del;
+
+			clip_rect.x = p.x;
+			clip_rect.y = p.y;
+
+
+			clip_rect.x = max(0, min(clip_rect.x, gmat.cols - clip_rect.width));
+			clip_rect.y = max(0, min(clip_rect.y, gmat.rows - clip_rect.height));
+
 		}
 
 
-		pre_trect = trect;
+		if(cors_threshold <= cors.size())return track_ok;
 
+		Mat fs;
+		yn_ptr->detect(mat,fs);
+		Mat f;
+		if(find_main_face(fs,f)){
+			YuNetLandMark mk(f);
+			//auto face_pos_prev = face_pos;
+			face_pos = (mk.left_eye + mk.right_eye)*.5;
 
-		trect.x=p.x;
-		trect.y=p.y;
+			bool ok = detect_safe_face(mat,mk);
+			if(ok){
+				Rect grect;
+				grect.x = mk.pos.x;
+				grect.y = mk.pos.y;
+				double mouse_y = max(mk.left_mouse.y , mk.right_mouse.y);
 
+				grect.width = mk.size.x; 
+				grect.height = mouse_y - mk.pos.y;
+				
+				grect = rect_resize(grect,0.9);
+
+				Mat crop2(gmat,grect);
+				goodFeaturesToTrack(crop2, cors, max_points, 0.03, 10);
+				
+				clip_rect = rect_resize(grect,1.11);
+				
+				crop = Mat(gmat,clip_rect);
+
+				for (auto& i : cors) {
+					i.x = (i.x + grect.x) - clip_rect.x;
+					i.y = (i.y + grect.y) - clip_rect.y;
+				}
+
+				p.x = clip_rect.x;
+				p.y = clip_rect.y;
+				p_prev = p;
+				clip_p_prev.x = clip_rect.x;
+				clip_p_prev.y = clip_rect.y;
+				is_op_active = true;
+				cors_threshold = max(2, (int)cors.size()/4);
+				center_point = face_pos - p;
+				trect = clip_rect;
+			}
+			/*
+			circle(mat, mk.right_eye, 1, { 0,0,255 });
+			circle(mat, mk.left_eye, 1, { 0,0,255 });
+			circle(mat, mk.nose, 1, { 0,0,255 });
+			circle(mat, mk.right_mouse, 1, { 0,0,255 });
+			circle(mat, mk.left_mouse, 1, { 0,0,255 });
+			circle(mat,face_pos,1,{0,0,255});*/
+			//putText(mat, to_string(ok), { 0,50 }, 0, 1, { 0,0,255 });
+			//putText(mat,to_string(f_del_pow2),{0,100},0,1,{0,0,255});
+		}
+		return track_ok;
 	}
 
-	Point2d get_point() {
-		auto ans = p;
-		ans.x += trect.width * .5;
-		ans.y += trect.height*.5;
+	Point2d kc2::Tracker::get_point() {
+		Point2d ans = p;
+		ans.x += center_point.x;
+		ans.y += center_point.y;
 		return ans;
 	}
 
-	Point2d get_delta() {
+	Point2d kc2::Tracker::get_delta() {
 		return del;
 	}
 
 
-	Point2d get_acceleration() {
+	Point2d kc2::Tracker::get_acceleration() {
 		return acc;
 	}
 
-	Rect get_bbox() {
+	Rect kc2::Tracker::get_bbox() {
 		return trect;
 	}
 
-	void draw_ui(Mat mat) {
+	void kc2::Tracker::draw_ui(Mat mat) {
 		for (auto i : cors) {
-			i.x += clip_rect.x;
-			i.y += clip_rect.y;
+			i.x += trect.x;
+			i.y += trect.y;
 			cv::circle(mat, i, 3, cv::Scalar(0, 0, 255), -1);
 		}
-		rectangle(mat, clip_rect, { 0,0,255 }, 2);
+
+		cv::circle(mat, get_point(), 3, cv::Scalar(0, 255, 0), -1);
+
+
+		rectangle(mat, trect, { 0,0,255 }, 2);
 
 	}
 
-
-};
-
-
-class CursorOperator {
-private:
-	Point2d pos_cursor_screen{0,0};
-	POINT pos_send_screen;
-	Point2d del_lowpass_sensor;
-public:
-
-	CursorOperator() {
-		
+	void kc2::Tracker::release() {
+		cors.clear();
+		yn_ptr.release();
+		crop.release();
 	}
-
-	void input(Point2d pos_sensor,Point2d del_sensor,Point2d acc_sensor,int64_t interval) {
-		//cout << interval << endl;
-		double ts =  interval / 1e3;
-		
-		//Point2d del_v_sencor = del_sensor / ts;
-		//printf("del:: x:%lf y:%lf  ", del_sensor.x, del_sensor.y);
-
-		//printf("del_v:: x:%lf y:%lf interval:%d\n",del_v_sencor.x , del_v_sencor.y,interval);
-
-
-		POINT pos_current_screen;
-		GetCursorPos(&pos_current_screen);
-		
-		if (pos_send_screen.x != pos_current_screen.x || pos_send_screen.y != pos_current_screen.y) {
-			pos_cursor_screen.x = pos_current_screen.x;
-			pos_cursor_screen.y = pos_current_screen.y;
-			del_lowpass_sensor=del_sensor;//{0,0};
-		}
-
-		del_lowpass_sensor = del_lowpass_sensor*.4 + del_sensor*.6;
-		double pow2_del = acc_sensor.x * acc_sensor.x + acc_sensor.y * acc_sensor.y;
-		double k_del = min(10.0,max(5.0,pow2_del));
-
-		auto pos_add = del_lowpass_sensor * k_del;
-
-		if ( abs(pos_add.x) < 1) {
-			pos_add.x=0;
-		}
-
-		if (abs(pos_add.y) < 1) {
-			pos_add.y = 0;
-		}
-
-		pos_add*=3;
-
-		pos_add.x = -pos_add.x;
-
-		pos_cursor_screen+= pos_add;
-
-
-		pos_send_screen.x = pos_cursor_screen.x;
-		pos_send_screen.y = pos_cursor_screen.y;
-
-		POINT pos_del;
-		pos_del.x = pos_send_screen.x - pos_current_screen.x;
-		pos_del.y = pos_send_screen.y - pos_current_screen.y;
-
-		mouse_event(MOUSEEVENTF_MOVE,pos_del.x,pos_del.y,NULL,NULL);
-		
-	}
-
-
 
 
 };
@@ -335,11 +385,11 @@ public:
 
 EXPORT void test_track() {
 	Mat mat;
-	CursorOperator cuop;
+	//CursorOperator cuop;
 	VideoCapture cap(0);
 	cap.read(mat);
 
-	Tracker tr(mat.size().width , mat.size().height,50);
+	kc2::Tracker tr(mat.size().width , mat.size().height,50);
 	kc2::timer time;
 	time.start();
 	int64_t pre_time = time.elapsed();
@@ -347,7 +397,7 @@ EXPORT void test_track() {
 		cap.read(mat);
 		tr.input(mat);
 		auto ctime = time.elapsed();
-		cuop.input(tr.get_point(),tr.get_delta(),tr.get_acceleration(),ctime - pre_time);
+		//cuop.input(tr.get_point(),tr.get_delta(),tr.get_acceleration(),ctime - pre_time);
 		pre_time = ctime;
 
 		cv::blur(mat, mat, { 100,100 });
@@ -360,7 +410,4 @@ EXPORT void test_track() {
 }
 
 
-
-
-}
 

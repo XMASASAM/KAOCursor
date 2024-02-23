@@ -7,5 +7,5 @@ extern "C"{
 }
 
 int main(void) {
-	test_track();
+	test_cap2();
 }

@@ -24,10 +24,26 @@ namespace KC2.Pages
 	/// </summary>
 	public partial class MainPage : Page
 	{
+		
 		public MainPage()
 		{
 			InitializeComponent();
 			//CaptureView.StartCapture(0);
+			App ss = (App)App.Current;
+			SaveData data = ss.SaveData;
+			if (!string.IsNullOrEmpty(data.DeviceName))
+			{
+				int index = KC2DeviceInformation.GetIndex(data.DeviceName, data.DevicePath);
+				if (index != -1)
+				{
+					CaptureProperty prop = data.CaptureProperty;
+					prop.FlagFpsOption = 1;
+					//ChangeCaptureView(index,prop);
+					CaptureDevice.Open(index, prop);
+				}
+
+			}
+
 		}
 
 
@@ -43,43 +59,52 @@ namespace KC2.Pages
 		{
 			bool visible = (bool)e.NewValue;
 			if(visible){
-				App ss = (App)App.Current;
-				SaveData data = ss.SaveData;
-				if(!string.IsNullOrEmpty(data.DeviceName)){
-					int index =  KC2DeviceInformation.GetIndex(data.DeviceName, data.DevicePath);
-					if(index!=-1){
-						CaptureProperty prop = new CaptureProperty {
-							Width = data.DeviceSize.X,
-							Height = data.DeviceSize.Y
-						};
-						prop.FlagFpsOption = 1;
-						ChangeCaptureView(index,prop);
-						CaptureView.Angle = data.CameraAngle;
-						CaptureView.ScaleX = data.CameraScaleX;
-						CaptureView.ScaleY = data.CameraScaleY;
-					}
-
-				}
+				CaptureView.Start();
 			}else{
-				CaptureView.StopCapture();
-				//CaptureView.ReleaseCapture();
+				//CaptureView.StopCapture();
+				CaptureView.Stop();
 			}
 
 		}
 
 
 		public void ChangeCaptureView(int index, CaptureProperty prop){
-			CaptureView.StartCapture(index,prop);
+			//CaptureView.StartCapture(index,prop);
 		}
 		public void ChangeCaptureView(int index)
 		{
-			CaptureProperty prop = new CaptureProperty{ Width=640,Height=480,FlagFpsOption=1};
-			ChangeCaptureView(index,prop);
+			//CaptureProperty prop = new CaptureProperty{ Width=640,Height=480,FlagFpsOption=1};
+			//ChangeCaptureView(index,prop);
 		}
 
 		public void ReleaseCaptureView(){
-			CaptureView.ReleaseCapture();
+			//CaptureView.ReleaseCapture();
 		}
 
-	}
+		private void StartButton_Click(object sender, RoutedEventArgs e)
+		{
+			if (KC2HandsFreeMouse.IsActive)
+			{
+				//VideoCaptureDevice.ReleaseHandsFreeMouse();
+				CaptureDevice.ReleaseHandsFreeMouse();
+				StartButton.Content = "Start";
+			}
+			else
+			{
+				CaptureDevice.StartHandsFreeMouse();
+				if(KC2HandsFreeMouse.IsActive){
+					StartButton.Content = "Stop";
+				}
+				//if (VideoCaptureDevice.StartHandsFreeMouse(CaptureView.GetVideoCaptureDevice(),0) == 1)
+				//{
+				//	StartButton.Content = "Stop";
+				//}
+			}
+        }
+
+		private void RangeButton_Click(object sender, RoutedEventArgs e)
+		{
+			NavigationService.Navigate(new Pages.RangePage(this));
+		}
+    }
 }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace KC2.DataStructs
 {
-	internal class MeasureFPS
+	public class MeasureFPS
 	{
 		int count = 0;
 		int ans;

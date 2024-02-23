@@ -14,4 +14,16 @@ struct CaptureProperty {
 	int width=-1;
 	int height=-1;
 	int flag_fps_option=1;
+	int angle=0;
+	int hflip=0;
+
+	int get_actual_width() {
+		if(angle==90 || angle==270)return height;
+		return width;
+	}
+
+	int get_actual_height() {
+		if (angle == 90 || angle == 270)return width;
+		return height;
+	}
 };

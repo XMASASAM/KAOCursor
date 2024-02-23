@@ -16,7 +16,7 @@ namespace KC2NativeWrapper
 		static extern IntPtr kc2np_get_F4MVideoCapture(int capture_index, CaptureProperty prop);
 
 		[DllImport(DLLNAME)]
-		static extern FrameInfo kc2np_F4MVideoCapture_get_current_frame(IntPtr vc);
+		static extern FrameInfo kc2np_F4MVideoCapture_get_current_frame(IntPtr vc,int is_draw_hfm_ui);
 
 		[DllImport(DLLNAME)]
 		static extern void kc2np_F4MVideoCapture_release_capture(ref IntPtr vc);
@@ -26,20 +26,24 @@ namespace KC2NativeWrapper
 		[DllImport(DLLNAME)]
 		static extern int kc2np_F4MVideoCapture_get_fps(IntPtr vc);
 
+		[DllImport(DLLNAME)]
+		static extern void kc2np_F4MVideoCapture_change_flip(IntPtr vc, int angle, int hflip);
 
-		IntPtr cap;
-		public bool IsOpened{ get; private set; } = false;
+		internal IntPtr cap = 0;
+		public bool IsOpened
+		{
+			get { return cap != IntPtr.Zero; }
+		}
 		public F4MVideoCapture(int capture_index, CaptureProperty prop)
 		{
 			if (capture_index == -1) return;
 			cap = kc2np_get_F4MVideoCapture(capture_index, prop);
 			if (cap == IntPtr.Zero) return;
-			IsOpened = true;
 		}
 
 		public FrameInfo GetCurrentFrameInfo()
 		{
-			return kc2np_F4MVideoCapture_get_current_frame(cap);
+			return kc2np_F4MVideoCapture_get_current_frame(cap,1);
 		}
 
 		public void ReleaseCapture()
@@ -55,5 +59,11 @@ namespace KC2NativeWrapper
 		{
 			return kc2np_F4MVideoCapture_get_fps(cap);
 		}
+
+		public void ChangeFlip(int angle, int hflip)
+		{
+			kc2np_F4MVideoCapture_change_flip(cap, angle, hflip);
+		}
+
 	}
 }

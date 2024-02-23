@@ -1,94 +1,8 @@
-#include"ffmpeg.h"
-#include"data_struct.h"
-#include"device.h"
-#include<thread>
-#include<queue>
-#include"timer.h"
+#include"f4mvideocapture.h"
 #include<opencv2/opencv.hpp>
+#include"handsfreemouse.h"
 namespace kc2 {
 using namespace std;
-
-
-class ShareFrame {
-private:
-	static unordered_map<AVFrame**,int> mp;
-	static mutex m;
-	AVFrame** fp = nullptr;
-public:
-	AVFrame* get() {
-		if(fp==nullptr || *fp==nullptr)return nullptr;
-		return *fp;
-	}
-
-	void try_free() {
-
-		if(fp==nullptr)return;
-
-		{
-			lock_guard lock(m);
-			mp[fp]--;
-			//printf("pop: fp:%ld count:%d\n", fp, mp[fp]);
-
-			if (mp[fp] <= 0) {
-
-				mp.erase(fp);
-				if(*fp!=nullptr){
-					av_frame_free(fp);
-					delete fp;
-					*fp=nullptr;
-				}
-			}
-			fp = nullptr;
-		}
-	}
-
-	void set_frame(AVFrame** new_frame_ptr) {
-		if (new_frame_ptr == nullptr || *new_frame_ptr == nullptr)return;
-
-		{
-			lock_guard lock(m);
-			fp = new_frame_ptr;
-			mp[fp]++;
-			//printf("set: fp:%ld count:%d\n",fp,mp[fp]);
-		}
-	}
-
-	ShareFrame(AVFrame* a) {
-
-		try_free();
-		auto f = new AVFrame*;
-		*f = a;
-		set_frame(f);
-	}
-
-	ShareFrame(ShareFrame& a) {
-		try_free();
-		set_frame(a.fp);
-	}
-
-
-	~ShareFrame() {
-		try_free();
-	}
-
-	ShareFrame& operator=(ShareFrame&& a)noexcept {
-		try_free();
-		set_frame(a.fp);
-		a.try_free();
-		return *this;
-	}
-
-
-	ShareFrame& operator=(ShareFrame& a) {
-		try_free();
-		set_frame(a.fp);
-		return *this;
-	}
-
-};
-
-unordered_map<AVFrame**, int> ShareFrame::mp;
-mutex ShareFrame::m;
 
 char* to_utf8(const wchar_t* src) {
 	char* buf;
@@ -116,22 +30,41 @@ char* to_utf8(const wchar_t* src) {
 }
 
 
-void init_filter_context(AVCodecContext* dec_ctx, AVPixelFormat input_pix_fmt, AVPixelFormat output_pix_fmt, FilteringContext* filter_ctx) {
+Mat mat2;
+
+
+FrameInfo mat2frameinfo(Mat mat) {
+	FrameInfo info;
+	info.width = mat.cols;
+	info.height = mat.rows;
+	info.stride = mat.step;
+	info.buffsize = mat.total() * mat.elemSize();
+	info.ptr = mat.ptr();
+	return info;
+}
+
+void init_filter_context(AVCodecContext* dec_ctx,int angle,bool hf, AVPixelFormat output_pix_fmt, FilteringContext* filter_ctx) {
 //	if (dec_ctx->codec_type != AVMEDIA_TYPE_VIDEO)return 0;
 	char args[512];
 	int ret = 0;
-	const AVFilter* buffersrc = NULL;
-	const AVFilter* buffersink = NULL;
+	const AVFilter* buffersrc = avfilter_get_by_name("buffer");
+	const AVFilter* buffersink = avfilter_get_by_name("buffersink");
+	const AVFilter* transpose = avfilter_get_by_name("transpose");
+	const AVFilter* hflip = avfilter_get_by_name("hflip");
+	const AVFilter* vflip = avfilter_get_by_name("vflip");
 	AVFilterContext* buffersrc_ctx = NULL;
 	AVFilterContext* buffersink_ctx = NULL;
+	AVFilterContext* transpose_ctx = NULL;
+	AVFilterContext* hflip_ctx = NULL;
+	AVFilterContext* vflip_ctx = NULL;
 	AVFilterInOut* outputs = avfilter_inout_alloc();
 	AVFilterInOut* inputs = avfilter_inout_alloc();
 	AVFilterGraph* filter_graph = avfilter_graph_alloc();
-	buffersrc = avfilter_get_by_name("buffer");
-	buffersink = avfilter_get_by_name("buffersink");
+
+
 	snprintf(args, sizeof(args),
 		"video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
-		dec_ctx->width, dec_ctx->height, input_pix_fmt,
+		dec_ctx->width, dec_ctx->height, dec_ctx->pix_fmt,
 		dec_ctx->pkt_timebase.num, dec_ctx->pkt_timebase.den,
 		dec_ctx->sample_aspect_ratio.num,
 		dec_ctx->sample_aspect_ratio.den);
@@ -150,7 +83,57 @@ void init_filter_context(AVCodecContext* dec_ctx, AVPixelFormat input_pix_fmt, A
 	inputs->pad_idx = 0;
 	inputs->next = NULL;
 
-	avfilter_graph_parse_ptr(filter_graph, "null", &inputs, &outputs, NULL);
+	
+	if (angle == 0 && !hf) {
+		avfilter_graph_parse_ptr(filter_graph, "null", &inputs, &outputs, NULL);
+	}
+
+	if (angle == 90 && !hf) {
+		avfilter_graph_create_filter(&transpose_ctx, transpose, "f1", "dir=clock", NULL, filter_graph);
+		avfilter_link(buffersrc_ctx, 0, transpose_ctx, 0);
+		avfilter_link(transpose_ctx,0,buffersink_ctx,0);
+	}
+
+	if (angle == 180 && !hf) {
+		avfilter_graph_create_filter(&vflip_ctx, vflip, "f1", NULL, NULL, filter_graph);
+		avfilter_graph_create_filter(&hflip_ctx, hflip, "f2", NULL, NULL, filter_graph);
+		avfilter_link(buffersrc_ctx, 0, vflip_ctx, 0);
+		avfilter_link(vflip_ctx, 0, hflip_ctx, 0);
+		avfilter_link(hflip_ctx, 0, buffersink_ctx, 0);
+	}
+
+	if (angle == 270 && !hf) {
+		avfilter_graph_create_filter(&transpose_ctx, transpose, "f1", "dir=cclock", NULL, filter_graph);
+		avfilter_link(buffersrc_ctx, 0, transpose_ctx, 0);
+		avfilter_link(transpose_ctx,0,buffersink_ctx,0);
+	}
+
+
+	if (angle == 0 && hf) {
+		avfilter_graph_create_filter(&hflip_ctx, hflip, "f1", NULL, NULL, filter_graph);
+		avfilter_link(buffersrc_ctx, 0, hflip_ctx, 0);
+		avfilter_link(hflip_ctx, 0, buffersink_ctx, 0);
+	}
+
+	if (angle == 90 && hf) {
+		avfilter_graph_create_filter(&transpose_ctx, transpose, "f1", "dir=clock_flip", NULL, filter_graph);
+		avfilter_link(buffersrc_ctx, 0, transpose_ctx, 0);
+		avfilter_link(transpose_ctx, 0, buffersink_ctx, 0);
+	}
+
+	if (angle == 180 && hf) {
+		avfilter_graph_create_filter(&vflip_ctx, vflip, "f1", NULL, NULL, filter_graph);
+		avfilter_link(buffersrc_ctx, 0, vflip_ctx, 0);
+		avfilter_link(vflip_ctx, 0, buffersink_ctx, 0);
+	}
+
+	if (angle == 270 && hf) {
+		avfilter_graph_create_filter(&transpose_ctx, transpose, "f1", "dir=cclock_flip", NULL, filter_graph);
+		avfilter_link(buffersrc_ctx, 0, transpose_ctx, 0);
+		avfilter_link(transpose_ctx, 0, buffersink_ctx, 0);
+	}
+
+
 	avfilter_graph_config(filter_graph, NULL);
 
 	filter_ctx->buffersrc_ctx = buffersrc_ctx;
@@ -218,23 +201,9 @@ bool open_input_video_device(const wchar_t* name,const kc2::VideoInfo& prop,bool
 
 
 
-class F4MVideoCapture{
-private:
-	AVFormatContext* ifmt_ctx;
-	AVCodecContext* dec_ctx;
-	FilteringContext flt_ctx;
-	AVPacket* read_packet = av_packet_alloc();
-	AVFrame* read_frame = av_frame_alloc();
-	thread th;
-	bool is_active=false;
-	kc2::MeasureFPS fps;
-	ShareFrame current_frame=nullptr;
-	mutex m;
-public:
-	CaptureProperty prop;
 
 	//‚¨‚à‚¢
-	bool open(int index,const CaptureProperty& prop) {
+	bool kc2::F4MVideoCapture::open(int index,const CaptureProperty& prop) {
 		avdevice_register_all();
 
 		kc2::device_info_list_t* d_list;
@@ -254,7 +223,7 @@ public:
 		bool ok = open_input_video_device(d_info.name,v_info,prop.flag_fps_option,&ifmt_ctx,&dec_ctx);
 		if(!ok)return false;
 
-		init_filter_context(dec_ctx,dec_ctx->pix_fmt,AV_PIX_FMT_BGR24,&flt_ctx);
+		init_filter_context(dec_ctx,prop.angle,prop.hflip,AV_PIX_FMT_BGR24,&flt_ctx);
 
 		is_active=true;
 		th=thread(&F4MVideoCapture::load,this);
@@ -262,12 +231,29 @@ public:
 		this->prop.width = dec_ctx->width;
 		this->prop.height = dec_ctx->height;
 		this->prop.flag_fps_option = prop.flag_fps_option;
+		this->prop.angle = prop.angle;
+		this->prop.hflip = prop.hflip;
+
+
 
 		return true;
 	}
 
-	void load() {
+	void kc2::F4MVideoCapture::load() {
 		while (is_active) {
+			
+//			if (is_change_filter && !is_out_fream_fresh) {
+				if (is_change_filter){ //&& !is_out_fream_fresh) {
+				{
+					lock_guard lock(m);
+					//current_frame.try_free();
+					avfilter_graph_free(&flt_ctx.filter_graph);
+					init_filter_context(dec_ctx,prop.angle,prop.hflip,AV_PIX_FMT_BGR24,&flt_ctx);
+					is_change_filter = false;
+				}
+			
+			}
+
 
 			int ret = av_read_frame(ifmt_ctx, read_packet);
 			if(ret<0)break;
@@ -280,27 +266,55 @@ public:
 			ret = av_buffersrc_add_frame_flags(flt_ctx.buffersrc_ctx,read_frame, 0);
 			if (ret < 0)break;
 
-			while (true) {
-				AVFrame* frame = av_frame_alloc();
-				ret = av_buffersink_get_frame(flt_ctx.buffersink_ctx,frame);
-				if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-					break;
+
+			{
+				lock_guard lock(m);
+				bool ok = false;
+				ShareFrame sf = nullptr;
+				while (true) {
+					AVFrame* frame = av_frame_alloc();
+					ret = av_buffersink_get_frame(flt_ctx.buffersink_ctx,frame);
+					if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+						break;
+					}
+
+					if(first_time==-1)first_time = frame->best_effort_timestamp;
+					auto t = frame->best_effort_timestamp - first_time;
+					frame->time_base = { 1,1000000 };
+					frame->best_effort_timestamp = av_rescale_q(t,dec_ctx->pkt_timebase,frame->time_base);
+					sf = frame;
+	//				current_frame.push(frame);
+					fps.count();
+					ok = true;
 				}
 
-				{
-					lock_guard lock(m);
-					current_frame = frame;
+				if (ok) {
+					is_new_frame = true;
+					hfm::input(sf);
+					//current_frame.push(sf);
 				}
 
-				fps.count();
 			}
 			av_packet_unref(read_packet);
+
+			
+			//if (hfm::is_avtive) {
+			//}
+			//else {
+			//	AVFrame* f = current_frame.get();
+			//	if (f != nullptr) {
+					//Mat mat({ f->width,f->height }, CV_8UC3, f->data[0], f->linesize[0]);
+					//cv::blur(mat, mat2, { 100,100 });
+			//	}
+
+			//}
+
 		}
 
 		//‰ð•ú.
 		is_active = false;
 		int ret = avcodec_send_packet(dec_ctx,nullptr);
-		while(0<=ret){
+		while (0 <= ret) {
 			ret = avcodec_receive_frame(dec_ctx, read_frame);
 			if (ret < 0)break;
 			av_frame_unref(read_frame);
@@ -317,7 +331,7 @@ public:
 		}
 		av_packet_unref(read_packet);
 
-		current_frame.try_free();
+//		current_frame.try_free();must do it
 
 		av_packet_free(&read_packet);
 		av_frame_free(&read_frame);
@@ -327,22 +341,47 @@ public:
 
 	}
 
-	ShareFrame read() {
+	ShareFrame kc2::F4MVideoCapture::read() {
+		//if(!is_new_frame)return nullptr;
+
 		{
 			lock_guard lock(m);
-			return current_frame;
+			//if (is_change_filter || is_out_fream_fresh || !is_new_frame)return nullptr;
+			//if (!is_new_frame)return nullptr;
+//			is_new_frame = false;
+//			is_new_frame = false;
+			//auto sf = current_frame.front();
+			//current_frame.pop();
+			return hfm::get_current_frame();//current_frame;
 		}
 	}
 
 	//‚¨‚à‚¢‚©‚à
-	void release() {
+	void kc2::F4MVideoCapture::release() {
 		is_active = false;
 		th.join();
+		hfm::release();
 	}
-	int get_fps() {
+	int kc2::F4MVideoCapture::get_fps() {
 		return fps.get_fps();
 	}
-};
+
+	void kc2::F4MVideoCapture::change_flip(int angle, bool hflip) {
+		if(!is_active)return;
+
+		if (prop.angle != angle || prop.hflip != hflip) {
+			prop.angle = angle;
+			prop.hflip = hflip;
+			{
+				lock_guard lock(m);
+				is_out_fream_fresh = true;
+				is_change_filter = true;
+			}
+
+		}
+
+
+	}
 
 
 
@@ -352,20 +391,37 @@ EXPORT F4MVideoCapture* kc2np_get_F4MVideoCapture(int capture_index, CaptureProp
 	return ans;
 }
 
-EXPORT FrameInfo kc2np_F4MVideoCapture_get_current_frame(F4MVideoCapture* vc) {
+EXPORT FrameInfo kc2np_F4MVideoCapture_get_current_frame(F4MVideoCapture* vc,int is_draw_hfm_ui) {
 	if (vc == nullptr) {
 		return FrameInfo();
 	}
-	ShareFrame sf = vc->read();
-	if(sf.get()==nullptr)return FrameInfo();
-	AVFrame* f = sf.get();
-	FrameInfo info;
-	info.width = f->width;
-	info.height = f->height;
-	info.stride = f->linesize[0];
-	info.buffsize = f->height * f->linesize[0];
-	info.ptr = f->data[0];
-	return info;
+	ShareFrame sf = nullptr;
+	//if(hfm::is_avtive && is_draw_hfm_ui){
+	//	return hfm::get_current_frame();
+	//}else
+	{
+		FrameInfo info{0,0,0,0,0};
+		sf = vc->read();
+		
+		if(sf.get()==nullptr){
+			//vc->is_out_fream_fresh = false;
+			return info;
+		}
+		AVFrame* f = sf.get();
+		//Mat mat2;
+		info.width = f->width;
+		info.height = f->height;
+		info.stride = f->linesize[0];
+		info.buffsize = f->height * f->linesize[0];
+		info.ptr = f->data[0];
+		
+		//Mat mat = hfm::avframe_to_mat(f);
+		//imshow("www", mat);
+
+		//info.ptr = mat2.data;
+		return info;
+		//return mat2frameinfo(mat2);//info;
+	}
 }
 
 
@@ -387,6 +443,22 @@ EXPORT int kc2np_F4MVideoCapture_get_fps(F4MVideoCapture* vc) {
 	return vc->get_fps();
 }
 
+EXPORT int kc2np_F4MVideoCapture_start_hansfreemouse(F4MVideoCapture* vc,int track_points,int is_setting_range) {
+	if (vc == nullptr)return 0;
+	
+	hfm::init(vc->prop,track_points, is_setting_range);
+	return 1;
+}
+
+EXPORT void kc2np_F4MVideoCapture_release_hansfreemouse() {
+	if(!hfm::is_avtive)return;
+	hfm::release();
+}
+
+EXPORT void kc2np_F4MVideoCapture_change_flip(F4MVideoCapture* vc, int angle,int hflip) {
+	if (vc==nullptr)return;
+	vc->change_flip(angle,hflip);
+}
 
 }
 
@@ -396,9 +468,9 @@ EXPORT int kc2np_F4MVideoCapture_get_fps(F4MVideoCapture* vc) {
 
 EXPORT void test_cap2() {
 	kc2::F4MVideoCapture cap;
-	int w=320;
-	int h=240;
-	if(!cap.open(2,{w,h,true})){
+	int w=640;
+	int h=480;
+	if(!cap.open(0,{w,h,true})){
 		std::cout << "error" << std::endl;
 		return;
 	}
@@ -411,10 +483,12 @@ EXPORT void test_cap2() {
 		if(frame!=nullptr){
 			cv::Mat mat(frame->height,frame->width,CV_8UC3,frame->data[0],frame->linesize[0]);
 			cv::imshow("qq",mat);
+			cout << frame->best_effort_timestamp << endl;
 			//av_frame_free(&frame);
 		}
 		cv::waitKey(1);
 	}
+	cv::destroyAllWindows();
 	cap.release();
 }
 
@@ -423,7 +497,7 @@ EXPORT void test_cap3() {
 	kc2::timer time;
 
 	while (time.elapsed() < 10000) {
-		auto fi = kc2::kc2np_F4MVideoCapture_get_current_frame(cap);
+		auto fi = kc2::kc2np_F4MVideoCapture_get_current_frame(cap,1);
 
 	}
 	

@@ -17,20 +17,13 @@ namespace KC2.DataStructs
 
 		public string DeviceName{ get; set; }
 		public string DevicePath{ get; set; }
-		public Vec2I DeviceSize{ get; set; }
 
-		public double CameraAngle { get; set; }
-		public double CameraScaleX { get; set; }
-		public double CameraScaleY { get; set; }
+		public CaptureProperty CaptureProperty{ get; set; }
 
 		public void SetDefault(){
 			DeviceName = string.Empty;
 			DevicePath = string.Empty;
-			DeviceSize = new Vec2I(0,0);
-
-			CameraAngle = 0;
-			CameraScaleX = 1;
-			CameraScaleY = 1;
+			CaptureProperty = new CaptureProperty();
 
 		}
 

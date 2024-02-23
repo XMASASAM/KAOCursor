@@ -137,7 +137,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="capture.cpp" />
-    <ClCompile Include="capture2.cpp" />
+    <ClCompile Include="f4mvideocapture.cpp" />
     <ClCompile Include="d2.cpp" />
     <ClCompile Include="device.cpp" />
     <ClCompile Include="device2.cpp" />
@@ -149,15 +149,18 @@
   <ItemGroup>
     <ClInclude Include="data_struct.h" />
     <ClInclude Include="device.h" />
+    <ClInclude Include="f4mvideocapture.h" />
     <ClInclude Include="ffmpeg.h" />
+    <ClInclude Include="handsfreemouse.h" />
     <ClInclude Include="kc2.h" />
     <ClInclude Include="shareframe.h" />
     <ClInclude Include="timer.h" />
+    <ClInclude Include="tracker.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="face_detection_yunet_2023mar.onnx">
       <DeploymentContent>false</DeploymentContent>
-      <FileType>CppCode</FileType>
+      <FileType>CSS</FileType>
     </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

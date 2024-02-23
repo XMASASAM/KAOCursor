@@ -19,9 +19,38 @@ namespace KC2NativeWrapper
 	[StructLayout(LayoutKind.Sequential)]
 	public struct CaptureProperty
 	{
-		public int Width;
-		public int Height;
-		public int FlagFpsOption;
+		public int Width { get; set; }
+		public int Height { get; set; }
+		public int FlagFpsOption { get; set; }
+		public int Angle { get; set; }
+		public int HorizonFlip { get; set; }
+
+		public int ActualWidth{
+			get{
+				if (Angle == 90 || Angle == 270) return Height;
+				return Width;
+			}
+		}
+
+		public int ActualHeight
+		{
+			get
+			{
+				if (Angle == 90 || Angle == 270) return Width;
+				return Height;
+			}
+		}
+
+		public CaptureProperty(){
+			Width = 0;
+			Height = 0;
+			FlagFpsOption = 1;
+			Angle = 0;
+			HorizonFlip = 0;
+		}
+
+
+
 	};
 	public class KC2VideoCapture
     {

@@ -12,9 +12,9 @@
 
 	<Grid>
 		<Grid.RowDefinitions>
-			<RowDefinition Height="*" MinHeight="64"/>
+			<RowDefinition Height="2*" MinHeight="64"/>
 			<RowDefinition Height="3*"/>
-			<RowDefinition Height="24"/>
+			<RowDefinition Height="Auto"/>
 		</Grid.RowDefinitions>
 		<Grid Grid.Row="0">
 			<Grid.ColumnDefinitions>
@@ -22,22 +22,23 @@
 				<ColumnDefinition MinWidth="64"/>
 				<ColumnDefinition />
 			</Grid.ColumnDefinitions>
-			<Button Grid.Column="0" Content="Start"/>
-			<Button Grid.Column="1" Content="Range"/>
-			<Button Grid.Column="2" Content="Config" Click="ConfigButton_Click"/>
+			<Button x:Name="StartButton" Grid.Column="0" Content="Start" Click="StartButton_Click"/>
+			<Button x:Name="RangeButton" Grid.Column="1" Content="Range" Click="RangeButton_Click"/>
+			<Button x:Name="ConfigButton" Grid.Column="2" Content="Config" Click="ConfigButton_Click"/>
 		</Grid>
 		<Grid Grid.Row="1">
-			<controls:VideoCaptureView x:Name="CaptureView"/>
+			<controls:CaptureDeviceView x:Name="CaptureView" Margin="0,0,0,0"/>
 		</Grid>
 		<Grid Grid.Row="2">
 			<StackPanel Orientation="Horizontal">
-				<Label>
+				<Label Padding="1">
 					<TextBlock>
 						<TextBlock.Text>
-							<MultiBinding StringFormat="{}{0}x{1} FPS:{2}">
-								<Binding ElementName="CaptureView" Path="CroppedFrame.Width"/>
-								<Binding ElementName="CaptureView" Path="CroppedFrame.Height"/>
-								<Binding ElementName="CaptureView" Path="FPSDevice"/>
+							<MultiBinding StringFormat="{}{0}x{1} CaptureFPS:{2} DisplayFPS:{3}">
+								<Binding ElementName="CaptureView" Path="CurrentFrame.Width"/>
+								<Binding ElementName="CaptureView" Path="CurrentFrame.Height"/>
+								<Binding ElementName="CaptureView" Path="CaptureFPS"/>
+								<Binding ElementName="CaptureView" Path="DisplayFPS"/>
 							</MultiBinding>
 							<!--Binding StringFormat="FPS : {0}" ElementName="CameraPreviewView" Path="FPSDevice"/-->
 						</TextBlock.Text>

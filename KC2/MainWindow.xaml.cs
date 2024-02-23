@@ -28,7 +28,7 @@ namespace KC2
 
 		private void Window_Closed(object sender, EventArgs e)
 		{
-            VideoCaptureDevice.AllActiveDeviceRelease();
+            CaptureDevice.ReleaseCapture();
 
 		}
 	}

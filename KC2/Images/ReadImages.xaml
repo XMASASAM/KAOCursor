@@ -1,0 +1,10 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	
+	<BitmapImage x:Key="IPC" UriSource="PC.png"/>
+	<BitmapImage x:Key="IPC_CC" UriSource="PC_CC.png"/>
+	<BitmapImage x:Key="IPC_LT" UriSource="PC_LT.png"/>
+	<BitmapImage x:Key="IPC_RT" UriSource="PC_RT.png"/>
+	<BitmapImage x:Key="IPC_RB" UriSource="PC_RB.png"/>
+	<BitmapImage x:Key="IPC_LB" UriSource="PC_LB.png"/>
+</ResourceDictionary>
