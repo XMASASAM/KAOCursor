@@ -10,15 +10,48 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Images\LeftClickMouse.png" />
+    <None Remove="Images\LeftDoubleClickMouse.png" />
+    <None Remove="Images\LeftDragMouse.png" />
+    <None Remove="Images\MiddleClickMouse.png" />
+    <None Remove="Images\MiddleDoubleClickMouse.png" />
+    <None Remove="Images\MiddleDragMouse.png" />
+    <None Remove="Images\Mouse.png" />
     <None Remove="Images\PC.png" />
     <None Remove="Images\PC_CC.png" />
     <None Remove="Images\PC_LB.png" />
     <None Remove="Images\PC_LT.png" />
     <None Remove="Images\PC_RB.png" />
     <None Remove="Images\PC_RT.png" />
+    <None Remove="Images\RightClickMouse.png" />
+    <None Remove="Images\RightDoubleClickMouse.png" />
+    <None Remove="Images\RightDragMouse.png" />
+    <None Remove="Images\WheelDownMouse.png" />
+    <None Remove="Images\WheelUpMouse.png" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Images\LeftClickMouse.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\LeftDoubleClickMouse.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\LeftDragMouse.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\MiddleClickMouse.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\MiddleDoubleClickMouse.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\MiddleDragMouse.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\Mouse.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Images\PC_RT.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -38,6 +71,21 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Images\PC_RB.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\RightClickMouse.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\RightDoubleClickMouse.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\RightDragMouse.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\WheelDownMouse.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Images\WheelUpMouse.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

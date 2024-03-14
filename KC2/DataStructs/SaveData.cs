@@ -20,11 +20,13 @@ namespace KC2.DataStructs
 
 		public CaptureProperty CaptureProperty{ get; set; }
 
+		public bool IsEnableClick{ get; set; }
+
 		public void SetDefault(){
 			DeviceName = string.Empty;
 			DevicePath = string.Empty;
 			CaptureProperty = new CaptureProperty();
-
+			IsEnableClick = true;
 		}
 
 		static SaveData(){

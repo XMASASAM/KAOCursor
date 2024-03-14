@@ -153,6 +153,7 @@
     <ClInclude Include="ffmpeg.h" />
     <ClInclude Include="handsfreemouse.h" />
     <ClInclude Include="kc2.h" />
+    <ClInclude Include="mouse_click.h" />
     <ClInclude Include="shareframe.h" />
     <ClInclude Include="timer.h" />
     <ClInclude Include="tracker.h" />

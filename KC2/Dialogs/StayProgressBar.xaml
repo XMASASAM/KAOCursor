@@ -1,0 +1,15 @@
+﻿<Window x:Class="KC2.Dialogs.StayProgressBar"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:KC2.Dialogs"
+        xmlns:cont="clr-namespace:KC2.Controls"
+
+        mc:Ignorable="d"
+        Title="StayProgressBar" Height="450" Width="800" ClipToBounds="False" IsHitTestVisible="False" WindowStyle="None" Background="Transparent" AllowsTransparency="true" Topmost="True">
+
+	<Grid Opacity=".7">
+		<cont:CircleProgressBar x:Name="bar"/>
+	</Grid>
+</Window>

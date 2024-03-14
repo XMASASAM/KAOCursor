@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -89,6 +90,32 @@ namespace KC2NativeWrapper
 				}
 			}
 			return -1;
+		}
+
+		static public List<VideoInfo> GetVideoInfoList(DeviceInfo dinfo){
+//			var dinfo = KC2DeviceInformation.DeviceList[index];
+			
+			Dictionary<(int X,int Y), VideoInfo> dic = new Dictionary<(int X, int Y), VideoInfo>();
+			for (int i = 0; i < dinfo.VideoInfoListSize; i++)
+			{
+				var vinfo = dinfo.GetVideoInfo(i);
+				(int X,int Y) s = new(vinfo.Width, vinfo.Height);
+				if (dic.ContainsKey(s))
+				{
+					if (vinfo.FPS < dic[s].FPS) continue;
+					dic[s] = vinfo;
+				}
+				else
+				{
+					dic.Add(s, vinfo);
+				}
+			}
+
+			List<VideoInfo> ans = new List<VideoInfo>();
+			foreach (var info in dic.Values) {
+				ans.Add(info);
+			}
+			return ans;
 		}
 
 	}

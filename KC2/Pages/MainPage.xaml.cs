@@ -1,4 +1,5 @@
 ﻿using KC2.DataStructs;
+using KC2.Dialogs;
 using KC2NativeWrapper;
 using System;
 using System.Collections.Generic;
@@ -24,7 +25,7 @@ namespace KC2.Pages
 	/// </summary>
 	public partial class MainPage : Page
 	{
-		
+		Dialogs.MouseClickController? MouseClickControllerDialog;
 		public MainPage()
 		{
 			InitializeComponent();
@@ -83,10 +84,17 @@ namespace KC2.Pages
 
 		private void StartButton_Click(object sender, RoutedEventArgs e)
 		{
+			var config = ((App)Application.Current).SaveData;
+
 			if (KC2HandsFreeMouse.IsActive)
 			{
 				//VideoCaptureDevice.ReleaseHandsFreeMouse();
 				CaptureDevice.ReleaseHandsFreeMouse();
+				if (MouseClickControllerDialog != null)
+				{
+					MouseClickControllerDialog.Close();
+					MouseClickControllerDialog = null;
+				}
 				StartButton.Content = "Start";
 			}
 			else
@@ -94,6 +102,12 @@ namespace KC2.Pages
 				CaptureDevice.StartHandsFreeMouse();
 				if(KC2HandsFreeMouse.IsActive){
 					StartButton.Content = "Stop";
+
+					KC2HandsFreeMouse.SetEnableClick(config.IsEnableClick);
+					if (config.IsEnableClick)
+					{
+						ShowMouseClickController();
+					}
 				}
 				//if (VideoCaptureDevice.StartHandsFreeMouse(CaptureView.GetVideoCaptureDevice(),0) == 1)
 				//{
@@ -106,5 +120,28 @@ namespace KC2.Pages
 		{
 			NavigationService.Navigate(new Pages.RangePage(this));
 		}
-    }
+
+		public void Close(){
+			CloseMouseClickController();
+		}
+
+		public void ShowMouseClickController(){
+			if (MouseClickControllerDialog == null && KC2HandsFreeMouse.IsActive)
+			{
+				MouseClickControllerDialog = new Dialogs.MouseClickController();
+				MouseClickControllerDialog.Show();
+			}
+		}
+
+		public void CloseMouseClickController(){
+
+			if (MouseClickControllerDialog != null)
+			{
+				MouseClickControllerDialog.Close();
+				MouseClickControllerDialog = null;
+			}
+
+		}
+
+	}
 }

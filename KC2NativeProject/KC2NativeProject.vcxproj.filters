@@ -71,6 +71,9 @@
     <ClInclude Include="handsfreemouse.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="mouse_click.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="face_detection_yunet_2023mar.onnx" />

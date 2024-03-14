@@ -3,14 +3,14 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34322.80
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KC2", "KC2\KC2.csproj", "{4854FB33-2AD4-47A9-9E0A-8AD6E74A1E9A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KC2", "KC2\KC2.csproj", "{4854FB33-2AD4-47A9-9E0A-8AD6E74A1E9A}"
 	ProjectSection(ProjectDependencies) = postProject
 		{AA11EF51-E208-40B2-B581-470C557F0D16} = {AA11EF51-E208-40B2-B581-470C557F0D16}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KC2NativeProject", "KC2NativeProject\KC2NativeProject.vcxproj", "{99F27E67-D65E-4471-897B-6F6E3A1C42C5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KC2NativeWrapper", "KC2NativeWrapper\KC2NativeWrapper.csproj", "{AA11EF51-E208-40B2-B581-470C557F0D16}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KC2NativeWrapper", "KC2NativeWrapper\KC2NativeWrapper.csproj", "{AA11EF51-E208-40B2-B581-470C557F0D16}"
 	ProjectSection(ProjectDependencies) = postProject
 		{99F27E67-D65E-4471-897B-6F6E3A1C42C5} = {99F27E67-D65E-4471-897B-6F6E3A1C42C5}
 	EndProjectSection
@@ -19,6 +19,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KC2DebugNativeProject", "KC
 	ProjectSection(ProjectDependencies) = postProject
 		{99F27E67-D65E-4471-897B-6F6E3A1C42C5} = {99F27E67-D65E-4471-897B-6F6E3A1C42C5}
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThreadTest", "ThreadTest\ThreadTest.csproj", "{8FA930C0-43FB-4F59-A06F-1BC2195F17E3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -78,6 +80,18 @@ Global
 		{255A84FD-7BAA-405F-8CD4-C8FB5E1A2D26}.Release|x64.Build.0 = Release|x64
 		{255A84FD-7BAA-405F-8CD4-C8FB5E1A2D26}.Release|x86.ActiveCfg = Release|Win32
 		{255A84FD-7BAA-405F-8CD4-C8FB5E1A2D26}.Release|x86.Build.0 = Release|Win32
+		{8FA930C0-43FB-4F59-A06F-1BC2195F17E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8FA930C0-43FB-4F59-A06F-1BC2195F17E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8FA930C0-43FB-4F59-A06F-1BC2195F17E3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8FA930C0-43FB-4F59-A06F-1BC2195F17E3}.Debug|x64.Build.0 = Debug|Any CPU
+		{8FA930C0-43FB-4F59-A06F-1BC2195F17E3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8FA930C0-43FB-4F59-A06F-1BC2195F17E3}.Debug|x86.Build.0 = Debug|Any CPU
+		{8FA930C0-43FB-4F59-A06F-1BC2195F17E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8FA930C0-43FB-4F59-A06F-1BC2195F17E3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8FA930C0-43FB-4F59-A06F-1BC2195F17E3}.Release|x64.ActiveCfg = Release|Any CPU
+		{8FA930C0-43FB-4F59-A06F-1BC2195F17E3}.Release|x64.Build.0 = Release|Any CPU
+		{8FA930C0-43FB-4F59-A06F-1BC2195F17E3}.Release|x86.ActiveCfg = Release|Any CPU
+		{8FA930C0-43FB-4F59-A06F-1BC2195F17E3}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

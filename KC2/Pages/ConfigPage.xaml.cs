@@ -63,6 +63,7 @@ namespace KC2.Pages
 			}
 			KC2DeviceInformation.Init();
 			DeviceList = KC2DeviceInformation.DeviceList;
+			EnableClickComboBox.SelectedIndex = Convert.ToInt32(config.IsEnableClick); //Convert.ToInt32(KC2HandsFreeMouse.GetEnableClick());
 
 		}
 		private void Page_Loaded(object sender, RoutedEventArgs e)
@@ -226,6 +227,22 @@ namespace KC2.Pages
 				}*/
 		}
 
+		private void EnableClickComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			int d = EnableClickComboBox.SelectedIndex;
+			if(d==0){//OFF
+				config.IsEnableClick = false;
+				KC2HandsFreeMouse.SetEnableClick(false);
+				if(KC2HandsFreeMouse.IsActive){
+					mainPage.CloseMouseClickController();
+				}
+			}
+			if(d==1){//ON
+				config.IsEnableClick = true;
+				KC2HandsFreeMouse.SetEnableClick(true);
+				if(KC2HandsFreeMouse.IsActive)mainPage.ShowMouseClickController();
 
-	}
+			}
+		}
+    }
 }

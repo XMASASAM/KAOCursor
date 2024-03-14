@@ -2,7 +2,7 @@
 #include"f4mvideocapture.h"
 #include"tracker.h"
 #include"data_struct.h"
-
+#include"mouse_click.h"
 using namespace std;
 using namespace cv;
 
@@ -30,10 +30,12 @@ namespace kc2 {
 		Point2d pos_prev;
 		kc2::timer time;
 		bool is_first = true;
+		bool is_stay = false;
 		bool input(Point2d pos,Point2d del_lowpass) {
 			double pow2del = del_lowpass.dot(del_lowpass);
 			if (4.0 < pow2del) {
 				is_first = true;
+				is_stay = false;
 				return false;
 			}
 
@@ -46,12 +48,15 @@ namespace kc2 {
 			auto d = pos - pos_prev;
 			if (4.0 < d.x * d.x + d.y * d.y) {
 				is_first = true;
+				is_stay = false;
 				return false;
 			}
 
 			if (time.elapsed() < 1000) {
+				is_stay = false;
 				return false;
 			}
+			is_stay = true;
 			return true;
 		}
 
@@ -59,7 +64,6 @@ namespace kc2 {
 			is_first = true;
 		}
 	}
-
 
 	namespace CursorOperator {
 
@@ -87,6 +91,7 @@ namespace kc2 {
 		int flg_range = 0;
 		bool is_set_ok = false;
 		bool is_first = true;
+		int flg_move_xy=0;
 		//Point2d del_lowpass_sensor;
 
 		double screen_width;// = screen_rect.right - screen_rect.left;
@@ -97,7 +102,10 @@ namespace kc2 {
 		Point2d screen_size;
 		Point2d sensor_size;
 
-		Point2d screen_from_screen_k{30,30};
+		Point2d screen_from_sensor_k{30,30};
+
+		Point2i cursor_prev_pos_on_screen;
+		Point2d stay_cursor_pos_on_screen;
 
 		Point2d vec_to_uvec(Point2d p) {
 			double d = sqrt( p.dot(p));
@@ -105,7 +113,76 @@ namespace kc2 {
 			return p / d;
 		}
 
+		double vec_to_dis(Point2d p) {
+			return sqrt(p.x*p.x+p.y*p.y);
+		}
+		double vec_to_dis_pow2(Point2d p) {
+			return p.x * p.x + p.y * p.y;
+		}
+
+		//800x448
+
+		//return true is cursor move , false is cursor stay.
 		void input(Point2d pos_sensor, Point2d del_sensor, Point2d acc_sensor, int64_t interval_micro,Mat mat) {
+//			set_mouse(500,500);
+			
+			if (is_first) {
+				stay_cursor_pos_on_screen = pos_sensor;
+				is_first = false;
+			}
+			
+			auto hdel = pos_sensor - stay_cursor_pos_on_screen;
+
+			auto hk = (abs(hdel.x) + abs(hdel.y)) / (abs(del_sensor.x) + abs(del_sensor.y));
+
+			Point2d del;
+			if(flg_move_xy!=0){
+				del = del_sensor * 1.5;
+			}
+			else del = hdel;//del_sensor.dot(hdel) * del_sensor;
+			
+			del= {del.x * screen_from_sensor_k.x /30 , del.y * screen_from_sensor_k.y/30};
+
+			flg_move_xy=0;
+			if (abs(del.x) < .4){
+				del.x = 0;
+			}
+			else {
+				flg_move_xy|=1;
+				if (del.x < 0) {
+					del.x+=.4;
+				}
+				else {
+					del.x-=.4;
+				}
+			}
+
+			if(abs(del.y)<.4){
+				del.y=0;
+			}
+			else {
+				flg_move_xy|=2;
+				if (del.y < 0) {
+					del.y += .4;
+				}
+				else {
+					del.y -= .4;
+				}
+			}
+			
+			if (flg_move_xy) {
+				stay_cursor_pos_on_screen.x = pos_sensor.x;
+				stay_cursor_pos_on_screen.y = pos_sensor.y;
+			}
+
+			del*=8;
+
+			double del_abs = abs(del.x) + abs(del.y);
+			double del_sen = abs(del_sensor.x) + abs(del_sensor.y);
+			del_sensor*=sqrt( vec_to_dis_pow2(del) / vec_to_dis_pow2(del_sensor) );
+
+			mouse_event(MOUSEEVENTF_MOVE, del.x, del.y, NULL, NULL);
+			/*
 			//cout << interval << endl;
 			double ts = interval_micro / 1e6;
 
@@ -205,8 +282,8 @@ namespace kc2 {
 				//putText(mat, to_string(del_abs.y), { 0,60 }, 0, 1, { 0,0,255 });
 
 			}
-			imshow("qqqqq", mat);
-			waitKey(1);
+			//imshow("qqqqq", mat);
+			//waitKey(1);
 			pos_send_screen.x = pos_cursor_screen.x;
 			pos_send_screen.y = pos_cursor_screen.y;
 
@@ -218,7 +295,7 @@ namespace kc2 {
 			
 
 			mouse_event(MOUSEEVENTF_MOVE, pos_del.x, pos_del.y, NULL, NULL);
-
+			*/
 		}
 
 
@@ -274,7 +351,7 @@ namespace kc2 {
 				screen_size = {screen_width , screen_height};
 				sensor_size = {sensor_width , screen_height};
 
-				screen_from_screen_k = {screen_width / sensor_width , screen_height / sensor_height};
+				screen_from_sensor_k = {screen_width / sensor_width , screen_height / sensor_height};
 
 				is_set_ok = true;
 				//MessageBoxW(0, to_wstring(absaxis[0]).c_str(), L"q", 0);
@@ -313,6 +390,48 @@ namespace kc2 {
 
 	};
 
+	namespace DetectCursorStay {
+		kc2::timer time;
+		int64_t limit=500;
+		int64_t current=0;
+		bool is_first = true;
+		POINT pos_prev;
+		//return 1 is trigger mouse click
+		bool input(bool flg_move_cursor) {
+			POINT pos_current_screen;
+			GetCursorPos(&pos_current_screen);
+			if (pos_current_screen.x != pos_prev.x || pos_current_screen.y != pos_prev.y) {
+				flg_move_cursor=true;
+			}
+			else {
+				flg_move_cursor=false;
+			}
+			pos_prev = pos_current_screen;
+
+			if (flg_move_cursor || is_first) {
+				time.start();
+				current=0;
+				is_first = false;
+				return false;
+			}
+			current = time.elapsed();
+			if (current < limit) {
+				return false;
+			}
+			return true;
+		}
+
+		double get_progress(int64_t* stay_time) {
+			*stay_time = current;
+			return min(1.0 , current / (double)limit);
+		}
+
+		void release() {
+			is_first = true;
+			current = 0;
+		}
+
+	}
 
 
 	namespace hfm {
@@ -328,6 +447,7 @@ namespace kc2 {
 		bool is_stay_sensor = false;
 		bool is_new_frame = false;
 		bool is_first = true;
+		bool is_enable_click = true;
 		//Mat current_mat;
 		//Mat out_mat;
 		ShareFrame current_frame=nullptr;
@@ -336,8 +456,7 @@ namespace kc2 {
 		Point2d point_sensor;
 		int range_set_count=0;
 		int64_t time_prev=0;
-
-
+		CursorClickEvent::KC2_MouseEvent flg_mouse_event=CursorClickEvent::KC2_MouseEvent_LeftClick;
 		Mat avframe_to_mat(AVFrame* f) {
 			return Mat({ f->width,f->height }, CV_8UC3, f->data[0], f->linesize[0]);
 		}
@@ -394,8 +513,13 @@ namespace kc2 {
 					is_stay_sensor = DetectStay::input(tr->get_point(),low_pass_delta);
 
 
-					if(!hfm::is_setting_range)
-						CursorOperator::input(tr->get_point(), low_pass_delta, tr->get_acceleration(),interval, mat);
+					if (!hfm::is_setting_range) {
+						CursorOperator::input(tr->get_point(), low_pass_delta, tr->get_acceleration(), interval, mat);
+						bool click = DetectCursorStay::input(CursorOperator::flg_move_xy);
+						if (is_enable_click) {
+							CursorClickEvent::input(flg_mouse_event,click);
+						}
+					}
 
 					point_sensor = tr->get_point();
 				}
@@ -410,21 +534,15 @@ namespace kc2 {
 		}
 
 		ShareFrame get_current_frame() {
-			//if(!hfm::is_avtive)return FrameInfo{0,0,0,0,0};
-			//FrameInfo info;
 
 			{
 				lock_guard lock(mtx);
 
-				//if (!hfm::is_avtive || current_mat.empty() || current_frame.get() == nullptr)return FrameInfo{ 0,0,0,0,0 };
-				//if (!hfm::is_avtive)return current_frame.get();//FrameInfo{0,0,0,0,0};
-//				out_frame = current_frame;
-				
 				if(current_frame.get()==nullptr || !is_new_frame)return nullptr;
 				out_frame = current_frame;
 				Mat mat = avframe_to_mat(out_frame.get());
 
-				cv::blur(mat, mat, { 100,100 });
+			//	cv::blur(mat, mat, { 100,100 });
 
 
 				if(hfm::is_avtive){
@@ -437,18 +555,8 @@ namespace kc2 {
 
 				}
 				is_new_frame = false;
-				//info.width = out_mat.cols;
-				//info.height = out_mat.rows;
-				//info.stride = out_mat.step;
-				//info.buffsize = out_mat.total() * out_mat.elemSize();
-				//info.ptr = out_mat.ptr();
 			}
 
-				//MessageBoxW(NULL,to_wstring((int64_t)info.ptr).c_str(), L"www", NULL);
-
-			
-
-			//imshow("wer",out_mat);
 			return out_frame;//.get();
 
 		}
@@ -475,7 +583,9 @@ namespace kc2 {
 				is_first = true;
 				LowPass::release();
 				DetectStay::release();
+				DetectCursorStay::release();
 				CursorOperator::release();
+				CursorClickEvent::release();
 				out_frame.try_free();
 				current_frame.try_free();
 			}
@@ -510,5 +620,24 @@ namespace kc2 {
 			return CursorOperator::set_screen_rect (rect);
 		}
 
+		EXPORT void test_hfm() {
+		//	CursorOperator::set_mouse(100,100);
+		}
+
+		EXPORT double kc2np_hansfreemouse_get_cursor_click_progress(int64_t* stay_time) {
+			return DetectCursorStay::get_progress(stay_time);
+		}
+
+		EXPORT void kc2np_hansfreemouse_set_enable_click(int enable_click) {
+			hfm::is_enable_click = enable_click;
+		}
+		EXPORT int kc2np_hansfreemouse_get_enable_click() {
+			return hfm::is_enable_click;
+		}
+
+		EXPORT void kc2np_hansfreemouse_set_mouse_click_event(int click_event) {
+			hfm::flg_mouse_event = (CursorClickEvent::KC2_MouseEvent)click_event;
+		}
 	}
 }
+

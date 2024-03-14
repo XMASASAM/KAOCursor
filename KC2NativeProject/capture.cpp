@@ -90,7 +90,7 @@ public:
 			bool ok = cap.read(mat);
 
 			if (ok) {
-				cout << "OK" << endl;
+			//	cout << "OK" << endl;
 			}
 			else {
 				MessageBoxW(0,L"qq",L"Comped",S_OK);

@@ -18,16 +18,20 @@ namespace KC2
     /// </summary>
     public partial class MainWindow : Window
     {
+        Pages.MainPage mainPage;
         public MainWindow()
         {
             InitializeComponent();
-            MainFrame.Navigate(new Pages.MainPage());
+            mainPage = new Pages.MainPage();
+            MainFrame.Navigate(mainPage);
             //KC2DeviceInformation.Init();
             //var 
         }
 
 		private void Window_Closed(object sender, EventArgs e)
 		{
+            KC2HandsFreeMouse.ReleaseHansFreeMouse();
+            mainPage.Close();
             CaptureDevice.ReleaseCapture();
 
 		}

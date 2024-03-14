@@ -21,14 +21,14 @@
 				<ColumnDefinition MinWidth="100"/>
 				<ColumnDefinition Width="Auto"/>
 			</Grid.ColumnDefinitions>
-				<Button x:Name="ReturnButton" Grid.Column="0" Content="戻る" Margin="3"  Click="ReturnButton_Click"/>
-				<Label Grid.Column="1" Padding="24,0,24,0" Content="設定画面" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-			
+			<Button x:Name="ReturnButton" Grid.Column="0" Content="戻る" Margin="3"  Click="ReturnButton_Click"/>
+			<Label Grid.Column="1" Padding="24,0,24,0" Content="設定画面" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+
 
 		</Grid>
 
 		<TabControl Grid.Row="1">
-			<TabItem Header="Camera">
+			<TabItem Header="カメラ">
 				<Grid Margin="10">
 					<Grid.ColumnDefinitions>
 						<ColumnDefinition/>
@@ -87,24 +87,24 @@
 						<Grid.RowDefinitions>
 							<RowDefinition Height="Auto"/>
 							<RowDefinition/>
-						
+
 						</Grid.RowDefinitions>
 						<Label Grid.Row="0" Content="カメラプレビュー" BorderThickness="1" BorderBrush="Gray" HorizontalContentAlignment="Center"/>
 						<Grid Grid.Row="1">
-						<controls:CaptureDeviceView x:Name="CameraPreviewView" BorderThickness="1,0,1,1" BorderBrush="Gray" Background="Black"/>
-						
-						<Label Foreground="White" Background="Black" VerticalAlignment="Bottom" HorizontalAlignment="Left" BorderThickness="1" BorderBrush="Transparent">
-							<TextBlock>
-								<TextBlock.Text>
+							<controls:CaptureDeviceView x:Name="CameraPreviewView" BorderThickness="1,0,1,1" BorderBrush="Gray" Background="Black"/>
+
+							<Label Foreground="White" Background="Black" VerticalAlignment="Bottom" HorizontalAlignment="Left" BorderThickness="1" BorderBrush="Transparent">
+								<TextBlock>
+									<TextBlock.Text>
 										<MultiBinding StringFormat="{}{0}x{1} FPS:{2}">
 											<Binding ElementName="CameraPreviewView" Path="CurrentFrame.Width"/>
 											<Binding ElementName="CameraPreviewView" Path="CurrentFrame.Height"/>
 											<Binding ElementName="CameraPreviewView" Path="CaptureFPS"/>
 										</MultiBinding>
 										<!--Binding StringFormat="FPS : {0}" ElementName="CameraPreviewView" Path="FPSDevice"/-->
-								</TextBlock.Text>
-							</TextBlock>
-						</Label>
+									</TextBlock.Text>
+								</TextBlock>
+							</Label>
 						</Grid>
 
 					</Grid>
@@ -112,8 +112,63 @@
 
 			</TabItem>
 			<TabItem Header="カーソル">
-            </TabItem>
-        </TabControl>
+				<StackPanel>
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition/>
+							<ColumnDefinition/>
+							<ColumnDefinition/>
+						</Grid.ColumnDefinitions>
+						<Grid.Resources>
+							<Style TargetType="StackPanel">
+								<Setter Property="Margin" Value="0,3,3,3"/>
+							</Style>
+						</Grid.Resources>
+						<StackPanel Grid.Column="0">
+							<Label Content="移動倍率"/>
+							<controls:NumericUpDown MaxValue="99999" MinValue="1" DecimalPlace="1"/>
+						</StackPanel>
+						<StackPanel Grid.Column="1">
+							<Label Content="X軸の移動倍率"/>
+							<controls:NumericUpDown MaxValue="99999" MinValue="1" DecimalPlace="1"/>
+						</StackPanel>
+						<StackPanel Grid.Column="2">
+							<Label Content="Y軸の移動倍率"/>
+							<controls:NumericUpDown MaxValue="99999" MinValue="1" DecimalPlace="1"/>
+						</StackPanel>
+					</Grid>
+					<Label Content="移動閾値"/>
+					<controls:NumericUpDown MaxValue="99999" MinValue="1" DecimalPlace="1"/>
 
-    </Grid>
+					<Label Content="ブレ吸収率(%)"/>
+					<controls:NumericUpDown MaxValue="99" MinValue="1" DecimalPlace="0"/>
+				</StackPanel>
+			</TabItem>
+			<TabItem Header="クリック">
+				<StackPanel>
+					<Label Content="クリックの発生"/>
+					<ComboBox x:Name="EnableClickComboBox" Height="Auto" SelectionChanged="EnableClickComboBox_SelectionChanged">
+						<ComboBoxItem Content="OFF"/>
+						<ComboBoxItem Content="ON"/>
+					</ComboBox>
+					<Label Content="クリック発生までのプログレスバー標示"/>
+					<ComboBox x:Name="EnableCircleProgressBarComboBox" Height="Auto" SelectionChanged="EnableClickComboBox_SelectionChanged">
+						<ComboBoxItem Content="OFF"/>
+						<ComboBoxItem Content="ON"/>
+					</ComboBox>
+
+					<Label Content="クリック時の効果音"/>
+					<ComboBox x:Name="EnableSEComboBox" Height="Auto" SelectionChanged="EnableClickComboBox_SelectionChanged">
+						<ComboBoxItem Content="OFF"/>
+						<ComboBoxItem Content="ON"/>
+					</ComboBox>
+
+					<Label Content="クリック発生までの時間(ms)"/>
+					<controls:NumericUpDown MaxValue="10000" MinValue="1" DecimalPlace="0"/>
+
+				</StackPanel>
+			</TabItem>
+		</TabControl>
+
+	</Grid>
 </Page>

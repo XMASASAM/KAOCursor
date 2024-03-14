@@ -214,7 +214,7 @@ namespace kc2 {
 		if (mk.pos.x < 0 || mk.pos.y < 0)is_out = true;
 		if (mat.cols <= mk.pos.x + mk.size.x || mat.rows <= mk.pos.y + mk.size.y)is_out = true;
 		
-		putText(mat, to_string(bias), { 0,100 }, 0, 1, { 0,0,255 });
+		//putText(mat, to_string(bias), { 0,100 }, 0, 1, { 0,0,255 });
 
 		if(bias <= 0.8 || 1.2 <= bias) return false;
 		if(is_out)return false;
