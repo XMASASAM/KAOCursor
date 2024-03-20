@@ -40,7 +40,8 @@ namespace ThreadTest
 			prop.Width = videoInfo.Width;
 			prop.Height = videoInfo.Height;
 			cap = new F4MVideoCapture(index, prop);
-		
+			//cap = new KC2VideoCapture(index, prop);
+			//cap.StartCapture();
 
 
 			timer.Interval = new TimeSpan(0, 0, 0, 0, 1);

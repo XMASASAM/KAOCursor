@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Media;
 using System.Security.Cryptography.Pkcs;
 using System.Text;
 using System.Threading.Tasks;
@@ -35,42 +36,62 @@ namespace KC2.Dialogs
 		ClickEventTag? current_tag;
 		//		KC2_MouseEvent current_mouse_event;
 		SaveData config;
-		double ListWidth=0;
+		double ListWidth = 0;
 		double ListHeight = 0;
 		Canvas canvas;
 		List<ListViewItem> ListViewItemList = new List<ListViewItem>();
 		bool IsWide = false;
 		bool IsInsideMoveBorder = false;
+		bool IsActualInsideMoveBorder = false;
 		bool IsWindowMove = false;
 		Vec2d WindowOffset = new Vec2d();
+		static MediaPlayer ClickSound;
+//		static MediaPlayer ClickSound;
+
+		static MouseClickController()
+		{
+	//		ClickSound = new MediaPlayer();//new SoundPlayer("PC-Mouse03-06(R).wav");	
+//			ClickSound.Open(new Uri("PC-Mouse03-06(R).wav"));
+		}
+
 		public MouseClickController()
 		{
 
 			InitializeComponent();
 			this.DataContext = this;
+			//	Visibility = Visibility.Hidden;
 
-
-			for(int i = 0; i < ClickEventTag.AllTags.Count;i++){
+			for (int i = 0; i < ClickEventTag.AllTags.Count; i++) {
 				Tags.Add(ClickEventTag.AllTags[i]);
-			//	if (3 < i) break;
+				//	if (3 < i) break;
 			}
-
-	//		this.mainPage = main;
+			Width = 0;
+			//	SetWindowWidth(64 * Tags.Count, false);
+			//		this.mainPage = main;
 			timer.Interval = new TimeSpan(0, 0, 0, 0, 1);
 			timer.Tick += new EventHandler(Update);
 			timer.Start();
 			config = ((App)Application.Current).SaveData;
 
-			
+
 			KC2HandsFreeMouse.SetEnableClick(config.IsEnableClick);
 
 			TagListView.SelectedIndex = 0;
 
-			timer_window_min.Tick+= new EventHandler(SetWindowMin);
+			timer_window_min.Tick += new EventHandler(SetWindowMin);
 			timer_window_min.Interval = new TimeSpan(0, 0, 0, 0, 500);
+
+
 		}
 
-	
+		bool DetectInsideMoveBorder()
+		{
+			if (!IsVisible) return false;
+			Win32Mouse.GetCursorPos(out var pos);
+			var lt = MoveBorder.PointToScreen(new System.Windows.Point(0, 0));
+			var rb = MoveBorder.PointToScreen(new System.Windows.Point(MoveBorder.ActualWidth, MoveBorder.ActualHeight));
+			return (lt.X <= pos.X && pos.X < rb.X && lt.Y <= pos.Y && pos.Y < rb.Y);
+		}
 
 		void Update(object? sender, EventArgs e)
 		{
@@ -79,11 +100,20 @@ namespace KC2.Dialogs
 				Left = pos.X - WindowOffset.X;
 				Top = pos.Y - WindowOffset.Y;
 			}
+			if(DetectInsideMoveBorder()){
+				Mouse.OverrideCursor = Cursors.Cross;
+				IsActualInsideMoveBorder = true;
+			}else{
+				IsActualInsideMoveBorder = false;
+				Mouse.OverrideCursor = null;
+			}
+
 		}
 
 		void SetWindowMin(object? sender, EventArgs e)
 		{
-			if (0 <= TagListView.SelectedIndex && IsWide)
+			
+			if (0 <= TagListView.SelectedIndex && IsWide && IsVisible)
 			{
 				SetWindowWidth(ListViewItemList[TagListView.SelectedIndex].ActualWidth,true);
 				double d = Canvas.GetLeft(ListViewItemList[TagListView.SelectedIndex]);
@@ -94,10 +124,12 @@ namespace KC2.Dialogs
 				}
 				IsWide = false;
 			}
+
 			timer_window_min.Stop();
 
 		}
 
+		//アニメーション.
 		public void SetChangeWidthAnime(double width, int milliseconds)
 		{
 			DoubleAnimation dx = new DoubleAnimation();
@@ -149,6 +181,7 @@ namespace KC2.Dialogs
 
 		private void Window_Closed(object sender, EventArgs e)
 		{
+			timer_window_min.Stop();
 			stayProgressBar.Close();
 		}
 
@@ -173,14 +206,20 @@ namespace KC2.Dialogs
 
 			//Window内に入られたとき.
 			if (sender is Window){
-				KC2HandsFreeMouse.SetEnableClick(false);
-				flg_cursor_inside=true;
+				//KC2HandsFreeMouse.SetEnableClick(false);
+				if (config.IsEnableClick)
+				{
+					KC2HandsFreeMouse.SetClickAllowed(0);
+				}
+				flg_cursor_inside =true;
 
 				Topmost = false;
 				Topmost = true;
 				stayProgressBar.Topmost = false;
 				stayProgressBar.Topmost = true;
 				timer_window_min.Stop();
+				Console.WriteLine("Enter_Window");
+
 			}
 			else if(sender is ListBoxItem){
 				ListBoxItem t = (ListBoxItem)sender;
@@ -198,25 +237,37 @@ namespace KC2.Dialogs
 					}
 					IsWide = true;
 				}
-			}else if(((FrameworkElement)sender).Name.Equals("MoveBorder")){
+				Console.WriteLine("Enter_ListBox");
+
+			}
+			else if(((FrameworkElement)sender).Name.Equals("MoveBorder")){
 			
 				IsInsideMoveBorder = true;
+				Console.WriteLine("Enter_MoveBorder");
+
+			}else{
+				Console.WriteLine("Enter_Other");
+
 			}
 		}
 
+		//上にほかのウィンドウがあると表示されない.
 		private void Window_MouseLeave(object sender, MouseEventArgs e)
 		{
+
 			if (IsWindowMove) return;
 			//Window外に出たとき.
 			if (sender is Window)
 			{
-				if (config.IsEnableClick)
-					KC2HandsFreeMouse.SetEnableClick(true);
+				if (config.IsEnableClick){
+					KC2HandsFreeMouse.SetClickAllowed(1);
+				}
 				flg_cursor_inside = false;
 				Topmost = true;
 
 				timer_window_min.Stop();
 				timer_window_min.Start();
+				Console.WriteLine("Leave_Window");
 
 			}
 			else if (sender is ListBoxItem)
@@ -227,22 +278,39 @@ namespace KC2.Dialogs
 				{
 					current_tag = null;
 				}
+				Console.WriteLine("Leave_ListBox");
+
 			}
 			else if (((FrameworkElement)sender).Name.Equals("MoveBorder"))
 			{
 				IsInsideMoveBorder = false;
+				Console.WriteLine("Leave_MoveBorder");
+
+			}else{
+				Console.WriteLine("Leave_Other");
+
 			}
 		}
 
 		public void CallClickCursorEvent(){
-			if(IsInsideMoveBorder){
+		//	ClickSound.Play();
+
+			if (IsInsideMoveBorder || IsActualInsideMoveBorder){
 				Win32Mouse.GetCursorPos(out var pos);
+				if (IsActualInsideMoveBorder){
+					IsWindowMove = !IsWindowMove;
+					WindowOffset.X = pos.X - Left;
+					WindowOffset.Y = pos.Y - Top;
+				}else{
+					//上にほかのウィンドウがある場合通る
+					IsInsideMoveBorder = false;
+					Window_MouseLeave(this,null);
+					current_tag = null;
+				}
 
-				IsWindowMove = !IsWindowMove;
+			}
 
-				WindowOffset.X = pos.X - Left;
-				WindowOffset.Y = pos.Y - Top;
-			}else{
+			if(!IsActualInsideMoveBorder){
 				IsWindowMove=false;
 			}
 
@@ -252,8 +320,13 @@ namespace KC2.Dialogs
 			TagListView.SelectedIndex = index;
 		}
 
+		//マウスコントローラーを移動させるイベント.
 		public void CallMoveEvent()
 		{
+			var t = KC2HandsFreeMouse.GetMouseClickEvent();
+			if( ((int)t&(int)KC2_MouseEvent.KC2_MouseEvent_Wheel)!=0 ){
+				return;
+			}
 			Win32Mouse.GetCursorPos(out var pos);
 			this.Left = pos.X;
 			this.Top = pos.Y;
@@ -276,8 +349,14 @@ namespace KC2.Dialogs
 			//canvas.Height = s.ActualHeight;
 			ListHeight = Math.Max(ListHeight, s.ActualHeight);
 			ListViewItemList.Add((ListViewItem)sender);
-			SetWindowWidth(ListWidth,false);
 			IsWide = true;
+
+			if(Tags.Count<=ListViewItemList.Count){
+				//Visibility = Visibility.Visible;
+				SetWindowWidth(ListWidth, false);
+
+			}
+
 		}
 
 		private void TagListView_Loaded(object sender, RoutedEventArgs e)
@@ -325,6 +404,17 @@ namespace KC2.Dialogs
 		{
 			if (!IsWindowMove) return;
 			IsWindowMove = false;
+		}
+
+		private void Window_LostFocus(object sender, RoutedEventArgs e)
+		{
+			Console.WriteLine("LostForcus");
+		}
+
+		private void Window_Activated(object sender, EventArgs e)
+		{
+			Console.WriteLine("Actived");
+
 		}
 	}
 }

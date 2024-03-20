@@ -1,13 +1,36 @@
 #pragma once
 #include<Windows.h>
 #include<thread>
-
+#include"soundeffect.h"
+//#include<mmstream.h>
 namespace kc2{
+
+struct HansFreeMouseProperty
+{
+	double LowPathRate=.9;
+	double DetectStayPixelThresholdPow2=4.0;
+	int DetectStayMillisecondTimeThreshold=1000;
+	double CursorMovePixelThreshold=.4;
+	double CursorMoveMultiplier=8;
+	double CursorMoveXFactor=1.0;
+	double CursorMoveYFactor=1.2;
+	int DetectCursorStayMillisecondTimeThreshold=500;
+	int NumTrackPoint=30;
+	int FlagDrawUILayout=1;
+	int MouseClickHoldMillisecondTime=10;
+	int MouseDoubleClickUnPressMillisecondTime=50;
+	int MouseWheelScrollAmount=12;
+	int MouseWheelScrollIntervalMillisecondTime=5;
+};
+
+HansFreeMouseProperty hfm_prop;
+
 namespace CursorClickEvent {
 	using namespace std;
 
 	bool flg_drag_press = false;
 	bool flg_wheel_is_active = false;
+	bool flg_click_allowed = true;
 	enum KC2_MouseEvent {
 		KC2_MouseEvent_None=0,
 
@@ -69,32 +92,42 @@ namespace CursorClickEvent {
 		int flg = MOUSEEVENTF_WHEEL;
 		int w = 0;
 		if (e & KC2_MouseEvent_WheelUp) {
-			w = 12;
+			w = hfm_prop.MouseWheelScrollAmount;
 		}
 		if (e & KC2_MouseEvent_WheelDown) {
-			w=-12;
+			w=-hfm_prop.MouseWheelScrollAmount;
 		}
 		mouse_event(flg, 0, 0, w, 0);
 	}
 
+	//static sound::SoundEffect se(L"pc-mouse-3.mp3", 0);
 
 	void await_click(KC2_MouseEvent e) {
+
+/*		thread th = thread([] {
+			PlaySound(L"PC-Mouse03-06(R).wav", NULL, SND_ASYNC);
+		});
+		th.detach();*/
+		//se.play(1);
+		if(!flg_click_allowed)return;
 		mouse_down(e);
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		std::this_thread::sleep_for(std::chrono::milliseconds(hfm_prop.MouseClickHoldMillisecondTime));
 		mouse_up(e);
 	}
 
 	void await_double_click(KC2_MouseEvent e) {
 		await_click(e);
-		std::this_thread::sleep_for(std::chrono::milliseconds(50));
+		std::this_thread::sleep_for(std::chrono::milliseconds(hfm_prop.MouseDoubleClickUnPressMillisecondTime));
 		await_click(e);
 	}
 
 
 	void await_wheel(KC2_MouseEvent e) {
+		if (!flg_click_allowed)return;
+
 		while (flg_wheel_is_active) {
 			mouse_wheel(e);
-			std::this_thread::sleep_for(std::chrono::milliseconds(5));
+			std::this_thread::sleep_for(std::chrono::milliseconds(hfm_prop.MouseWheelScrollIntervalMillisecondTime));
 		}
 	}
 
@@ -155,6 +188,10 @@ namespace CursorClickEvent {
 		flg_stay_prev = false;
 		flg_wheel_is_active = false;
 
+	}
+
+	void set_click_allowed(bool enable) {
+		flg_click_allowed = enable;
 	}
 
 

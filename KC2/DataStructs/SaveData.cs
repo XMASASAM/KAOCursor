@@ -22,11 +22,14 @@ namespace KC2.DataStructs
 
 		public bool IsEnableClick{ get; set; }
 
+		public HansFreeMouseProperty HansFreeMouseProperty{ get; set; }
+
 		public void SetDefault(){
 			DeviceName = string.Empty;
 			DevicePath = string.Empty;
 			CaptureProperty = new CaptureProperty();
 			IsEnableClick = true;
+			HansFreeMouseProperty = new HansFreeMouseProperty();
 		}
 
 		static SaveData(){

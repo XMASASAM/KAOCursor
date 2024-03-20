@@ -7,16 +7,20 @@ using namespace std;
 using namespace cv;
 
 namespace kc2 {
+
+
+
 	namespace LowPass {
 		Point2d del_lowpass_sensor;
 		Point2d del_prev;
 		bool is_first = true;
-		double k = .9;
 		Point2d input(Point2d del_sensor) {
 			if (is_first) {
 				del_lowpass_sensor = del_sensor;
 				is_first = false;
 			}
+			double k = hfm_prop.LowPathRate;
+
 			del_lowpass_sensor = del_sensor * k + del_lowpass_sensor * (1 - k);
 			return del_lowpass_sensor;
 		}
@@ -33,7 +37,8 @@ namespace kc2 {
 		bool is_stay = false;
 		bool input(Point2d pos,Point2d del_lowpass) {
 			double pow2del = del_lowpass.dot(del_lowpass);
-			if (4.0 < pow2del) {
+			double th = hfm_prop.DetectStayPixelThresholdPow2;
+			if (th < pow2del) {
 				is_first = true;
 				is_stay = false;
 				return false;
@@ -46,13 +51,13 @@ namespace kc2 {
 			}
 
 			auto d = pos - pos_prev;
-			if (4.0 < d.x * d.x + d.y * d.y) {
+			if (th < d.x * d.x + d.y * d.y) {
 				is_first = true;
 				is_stay = false;
 				return false;
 			}
 
-			if (time.elapsed() < 1000) {
+			if (time.elapsed() < hfm_prop.DetectStayMillisecondTimeThreshold) {
 				is_stay = false;
 				return false;
 			}
@@ -137,36 +142,37 @@ namespace kc2 {
 
 			Point2d del;
 			if(flg_move_xy!=0){
-				del = del_sensor * 1.5;
+				del = del_sensor*1.5;
 			}
 			else del = hdel;//del_sensor.dot(hdel) * del_sensor;
 			
 			del= {del.x * screen_from_sensor_k.x /30 , del.y * screen_from_sensor_k.y/30};
 
 			flg_move_xy=0;
-			if (abs(del.x) < .4){
+			double pix_th = hfm_prop.CursorMovePixelThreshold;
+			if (abs(del.x) < pix_th){
 				del.x = 0;
 			}
 			else {
 				flg_move_xy|=1;
 				if (del.x < 0) {
-					del.x+=.4;
+					del.x+=pix_th;
 				}
 				else {
-					del.x-=.4;
+					del.x-=pix_th;
 				}
 			}
 
-			if(abs(del.y)<.4){
+			if(abs(del.y)<pix_th){
 				del.y=0;
 			}
 			else {
 				flg_move_xy|=2;
 				if (del.y < 0) {
-					del.y += .4;
+					del.y += pix_th;
 				}
 				else {
-					del.y -= .4;
+					del.y -= pix_th;
 				}
 			}
 			
@@ -175,7 +181,10 @@ namespace kc2 {
 				stay_cursor_pos_on_screen.y = pos_sensor.y;
 			}
 
-			del*=8;
+			del*=hfm_prop.CursorMoveMultiplier;
+
+			del.x *= hfm_prop.CursorMoveXFactor;
+			del.y *= hfm_prop.CursorMoveYFactor;
 
 			double del_abs = abs(del.x) + abs(del.y);
 			double del_sen = abs(del_sensor.x) + abs(del_sensor.y);
@@ -392,12 +401,12 @@ namespace kc2 {
 
 	namespace DetectCursorStay {
 		kc2::timer time;
-		int64_t limit=500;
 		int64_t current=0;
 		bool is_first = true;
 		POINT pos_prev;
 		//return 1 is trigger mouse click
 		bool input(bool flg_move_cursor) {
+
 			POINT pos_current_screen;
 			GetCursorPos(&pos_current_screen);
 			if (pos_current_screen.x != pos_prev.x || pos_current_screen.y != pos_prev.y) {
@@ -415,15 +424,16 @@ namespace kc2 {
 				return false;
 			}
 			current = time.elapsed();
-			if (current < limit) {
+			if (current < hfm_prop.DetectCursorStayMillisecondTimeThreshold) {
 				return false;
 			}
 			return true;
 		}
 
 		double get_progress(int64_t* stay_time) {
+			int64_t limit = hfm_prop.DetectCursorStayMillisecondTimeThreshold;
 			*stay_time = current;
-			return min(1.0 , current / (double)limit);
+			return min(1.0 , current / (double)hfm_prop.DetectCursorStayMillisecondTimeThreshold);
 		}
 
 		void release() {
@@ -545,7 +555,7 @@ namespace kc2 {
 			//	cv::blur(mat, mat, { 100,100 });
 
 
-				if(hfm::is_avtive){
+				if(hfm::is_avtive && hfm_prop.FlagDrawUILayout){
 				//out_mat = current_mat;//clone()‚ÍÁ‚µ‚Ä‚¢‚¢‚©‚à.
 					if (tr != nullptr) {
 						tr->draw_ui(mat);
@@ -638,6 +648,20 @@ namespace kc2 {
 		EXPORT void kc2np_hansfreemouse_set_mouse_click_event(int click_event) {
 			hfm::flg_mouse_event = (CursorClickEvent::KC2_MouseEvent)click_event;
 		}
+
+		EXPORT int kc2np_hansfreemouse_get_mouse_click_event() {
+			return hfm::flg_mouse_event;
+		}
+
+		EXPORT void kc2np_hansfreemouse_set_propery(const HansFreeMouseProperty* prop) {
+			hfm_prop=*prop;
+		}
+
+		EXPORT void kc2np_hansfreemouse_set_click_allowed(int enable) {
+			CursorClickEvent::set_click_allowed(enable);
+		}
+
+
 	}
 }
 

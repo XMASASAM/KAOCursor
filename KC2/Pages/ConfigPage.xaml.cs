@@ -68,12 +68,43 @@ namespace KC2.Pages
 		}
 		private void Page_Loaded(object sender, RoutedEventArgs e)
 		{
+
+			//LicenseTab.Margin = new Thickness(tabItemWidth.ActualWidth,0,0,0);
+			
 			//			ResolutionComboBox.SelectedIndex = ResolutionList.Find()
 			ApplyResolution();
 
 			TransposeComboBox.SelectedIndex = AngleList.IndexOf(config.CaptureProperty.Angle);
 			TurnComboBox.SelectedIndex = config.CaptureProperty.HorizonFlip;
+
+			HansFreeMouseProperty hp = config.HansFreeMouseProperty;
+			LowPathRateView.SetCurrentValue(hp.LowPathRate, 2);
+			CursorMovePixelThresholdView.SetCurrentValue(hp.CursorMovePixelThreshold, 1);
+			CursorMoveMultiplierView.SetCurrentValue(hp.CursorMoveMultiplier, 1);
+			CursorMoveXFactorView.SetCurrentValue(hp.CursorMoveXFactor, 1);
+			CursorMoveYFactorView.SetCurrentValue(hp.CursorMoveYFactor, 1);
+			DetectCursorStayMillisecondTimeThresholdView.SetCurrentValue(hp.DetectCursorStayMillisecondTimeThreshold,0);
+			MouseClickHoldMillisecondTimeView.SetCurrentValue(hp.MouseClickHoldMillisecondTime, 0);
+			MouseDoubleClickUnPressMillisecondTimeView.SetCurrentValue(hp.MouseDoubleClickUnPressMillisecondTime, 0);
+			MouseWheelScrollAmountView.SetCurrentValue(hp.MouseWheelScrollAmount, 0);
+			MouseWheelScrollIntervalMillisecondTimeView.SetCurrentValue(hp.MouseWheelScrollIntervalMillisecondTime, 0);
 		}
+
+		void LoadHansFreeMousePropertyFromUI(){
+			HansFreeMouseProperty hp = config.HansFreeMouseProperty;
+			hp.LowPathRate = LowPathRateView.GetCurrentValue(2);
+			hp.CursorMovePixelThreshold = CursorMovePixelThresholdView.GetCurrentValue(1);
+			hp.CursorMoveMultiplier = CursorMoveMultiplierView.GetCurrentValue(1);
+			hp.CursorMoveXFactor = CursorMoveXFactorView.GetCurrentValue(1);
+			hp.CursorMoveYFactor = CursorMoveYFactorView.GetCurrentValue(1);
+			hp.DetectCursorStayMillisecondTimeThreshold = DetectCursorStayMillisecondTimeThresholdView.GetCurrentValueInt(0);
+			hp.MouseClickHoldMillisecondTime = MouseClickHoldMillisecondTimeView.GetCurrentValueInt(0);
+			hp.MouseDoubleClickUnPressMillisecondTime = MouseDoubleClickUnPressMillisecondTimeView.GetCurrentValueInt(0);
+			hp.MouseWheelScrollAmount = MouseWheelScrollAmountView.GetCurrentValueInt(0);
+			hp.MouseWheelScrollIntervalMillisecondTime = MouseWheelScrollIntervalMillisecondTimeView.GetCurrentValueInt(0);
+			config.HansFreeMouseProperty = hp;
+		}
+
 
 		void ApplyResolution(){
 			//VideoCaptureDevice? d = CameraPreviewView.GetVideoCaptureDevice();
@@ -182,6 +213,7 @@ namespace KC2.Pages
 
 			}else{
 				App app = (App)Application.Current;
+				LoadHansFreeMousePropertyFromUI();
 				if (!config.Equals(app.SaveData))
 				{
 					
@@ -243,6 +275,18 @@ namespace KC2.Pages
 				if(KC2HandsFreeMouse.IsActive)mainPage.ShowMouseClickController();
 
 			}
+		}
+
+		private void Hyperlink_Click(object sender, RoutedEventArgs e)
+		{
+			var s = (Hyperlink)sender;
+			var destinationurl = s.NavigateUri.ToString();//"https://www.bing.com/";
+			var sInfo = new System.Diagnostics.ProcessStartInfo(destinationurl)
+			{
+				UseShellExecute = true,
+			};
+			System.Diagnostics.Process.Start(sInfo);
+			e.Handled = true;
 		}
     }
 }

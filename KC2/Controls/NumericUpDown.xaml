@@ -7,9 +7,11 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
 	<Grid DataContext="{Binding RelativeSource={RelativeSource AncestorType=local:NumericUpDown}}">
+
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition/>
 			<ColumnDefinition Width="{Binding ButtonWidth}"/>
+			<ColumnDefinition Width="Auto"/>
 		</Grid.ColumnDefinitions>
 		<TextBox Grid.Column="0" x:Name="textbox" MaxLength="8" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" PreviewTextInput="TextBox_PreviewTextInput" TextChanged="TextBox_TextChanged" IsKeyboardFocusedChanged="textbox_IsKeyboardFocusedChanged"/>
 		<Grid Grid.Column="1">
@@ -24,5 +26,9 @@
 				<Path Stroke="Gray" StrokeThickness="1" Data="M0,0 3,3 L6,0"/>
 			</RepeatButton>
 		</Grid>
+		<Grid Grid.Column="2">
+			<Label Content="{Binding UnitText}" Margin="0"/>
+		</Grid>
 	</Grid>
+
 </UserControl>

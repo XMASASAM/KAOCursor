@@ -28,6 +28,9 @@
     <None Remove="Images\RightDragMouse.png" />
     <None Remove="Images\WheelDownMouse.png" />
     <None Remove="Images\WheelUpMouse.png" />
+    <None Remove="pc-mouse-3.mp3" />
+    <None Remove="PC-Mouse03-06%28R%29.mp3" />
+    <None Remove="PC-Mouse03-06%28R%29.wav" />
   </ItemGroup>
 
   <ItemGroup>
@@ -86,6 +89,15 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Images\WheelUpMouse.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="pc-mouse-3.mp3">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="PC-Mouse03-06(R).mp3">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="PC-Mouse03-06(R).wav">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

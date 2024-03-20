@@ -38,6 +38,48 @@ namespace KC2NativeWrapper
 		KC2_MouseEvent_Wheel = 0b11000000,
 
 	}
+
+	[StructLayout(LayoutKind.Sequential)]
+	public struct HansFreeMouseProperty
+	{
+		public double LowPathRate{ get; set; }
+		public double DetectStayPixelThresholdPow2 { get; set; }
+		public int DetectStayMillisecondTimeThreshold { get; set; }
+		public double CursorMovePixelThreshold { get; set; }
+		public double CursorMoveMultiplier { get; set; }
+		public double CursorMoveXFactor { get; set; }
+		public double CursorMoveYFactor { get; set; }
+		public int DetectCursorStayMillisecondTimeThreshold { get; set; }
+		public int NumTrackPoint { get; set; }
+		public int FlagDrawUILayout { get; set; }
+		public int MouseClickHoldMillisecondTime { get; set; }
+		public int MouseDoubleClickUnPressMillisecondTime { get; set; }
+		public int MouseWheelScrollAmount { get; set; }
+		public int MouseWheelScrollIntervalMillisecondTime { get; set; }
+
+		public HansFreeMouseProperty(){
+			SetDefault();
+		}
+
+		public void SetDefault(){
+			LowPathRate = .9;
+			DetectStayPixelThresholdPow2 = 4.0;
+			DetectStayMillisecondTimeThreshold = 1000;
+			CursorMovePixelThreshold = .4;
+			CursorMoveMultiplier = 8;
+			CursorMoveXFactor = 1.0;
+			CursorMoveYFactor = 1.2;
+			DetectCursorStayMillisecondTimeThreshold = 500;
+			NumTrackPoint = 30;
+			FlagDrawUILayout = 1;
+			MouseClickHoldMillisecondTime = 10;
+			MouseDoubleClickUnPressMillisecondTime = 50;
+			MouseWheelScrollAmount = 12;
+			MouseWheelScrollIntervalMillisecondTime = 5;
+		}
+
+
+	}
 	static public class KC2HandsFreeMouse
 	{
 		const string DLLNAME = "KC2NativeProject.dll";
@@ -72,6 +114,15 @@ namespace KC2NativeWrapper
 
 		[DllImport(DLLNAME)]
 		static extern void kc2np_hansfreemouse_set_mouse_click_event(int click_event);
+		[DllImport(DLLNAME)]
+		static extern void kc2np_hansfreemouse_set_propery(ref HansFreeMouseProperty prop);
+
+		[DllImport(DLLNAME)]
+		static extern int kc2np_hansfreemouse_get_mouse_click_event();
+
+		[DllImport(DLLNAME)]
+		static extern void kc2np_hansfreemouse_set_click_allowed(int enable);
+
 		static public bool IsActive{ get;private set; }
 
 		static public bool StartHansFreeMouse(F4MVideoCapture cap, int track_points, int is_setting_range)
@@ -125,6 +176,18 @@ namespace KC2NativeWrapper
 
 		public static void SetMouseClickEvent(KC2_MouseEvent click_event){
 			kc2np_hansfreemouse_set_mouse_click_event((int)click_event);
+		}
+
+		public static KC2_MouseEvent GetMouseClickEvent(){
+			return (KC2_MouseEvent)kc2np_hansfreemouse_get_mouse_click_event();
+		}
+
+		public static void SetPropety(HansFreeMouseProperty prop){
+			kc2np_hansfreemouse_set_propery(ref prop);
+		}
+
+		public static void SetClickAllowed(int enable){
+			kc2np_hansfreemouse_set_click_allowed(enable);
 		}
 
 	}

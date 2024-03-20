@@ -15,7 +15,6 @@
 			<RowDefinition Height="1*" MinHeight="100"/>
 			<RowDefinition Height="2*"/>
 		</Grid.RowDefinitions>
-
 		<Grid Grid.Row="0" Margin="0,0,0,16">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition MinWidth="100"/>
@@ -23,11 +22,18 @@
 			</Grid.ColumnDefinitions>
 			<Button x:Name="ReturnButton" Grid.Column="0" Content="戻る" Margin="3"  Click="ReturnButton_Click"/>
 			<Label Grid.Column="1" Padding="24,0,24,0" Content="設定画面" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-
-
 		</Grid>
+		<UniformGrid Columns="{Binding ElementName=Tab1,Path=Items.Count}" Margin="5,0">
+			<FrameworkElement x:Name="tabItemWidth"/>
+			<!-- no need to add the other three -->
+		</UniformGrid>
 
-		<TabControl Grid.Row="1">
+		<TabControl Grid.Row="1" x:Name="Tab1">
+			<TabControl.Resources>
+				<Style TargetType="TabItem">
+					<Setter Property="Width" Value="{Binding ElementName=tabItemWidth,Path=ActualWidth}"/>
+				</Style>
+			</TabControl.Resources>
 			<TabItem Header="カメラ">
 				<Grid Margin="10">
 					<Grid.ColumnDefinitions>
@@ -111,6 +117,8 @@
 				</Grid>
 
 			</TabItem>
+			<TabItem Header="追跡アルゴリズム">
+			</TabItem>
 			<TabItem Header="カーソル">
 				<StackPanel>
 					<Grid>
@@ -126,47 +134,114 @@
 						</Grid.Resources>
 						<StackPanel Grid.Column="0">
 							<Label Content="移動倍率"/>
-							<controls:NumericUpDown MaxValue="99999" MinValue="1" DecimalPlace="1"/>
+							<controls:NumericUpDown x:Name="CursorMoveMultiplierView" MaxValue="99999" MinValue="1" DecimalPlace="1" UnitText="倍"/>
 						</StackPanel>
 						<StackPanel Grid.Column="1">
 							<Label Content="X軸の移動倍率"/>
-							<controls:NumericUpDown MaxValue="99999" MinValue="1" DecimalPlace="1"/>
+							<controls:NumericUpDown x:Name="CursorMoveXFactorView" MaxValue="99999" MinValue="1" DecimalPlace="1" UnitText="倍"/>
 						</StackPanel>
 						<StackPanel Grid.Column="2">
 							<Label Content="Y軸の移動倍率"/>
-							<controls:NumericUpDown MaxValue="99999" MinValue="1" DecimalPlace="1"/>
+							<controls:NumericUpDown x:Name="CursorMoveYFactorView" MaxValue="99999" MinValue="1" DecimalPlace="1" UnitText="倍"/>
 						</StackPanel>
 					</Grid>
 					<Label Content="移動閾値"/>
-					<controls:NumericUpDown MaxValue="99999" MinValue="1" DecimalPlace="1"/>
+					<controls:NumericUpDown x:Name="CursorMovePixelThresholdView"  MaxValue="99999" MinValue="1" DecimalPlace="1" UnitText="pixel"/>
 
-					<Label Content="ブレ吸収率(%)"/>
-					<controls:NumericUpDown MaxValue="99" MinValue="1" DecimalPlace="0"/>
+					<Label Content="ブレ吸収率"/>
+					<controls:NumericUpDown x:Name="LowPathRateView" MaxValue="99" MinValue="1" DecimalPlace="0" UnitText="%"/>
 				</StackPanel>
 			</TabItem>
 			<TabItem Header="クリック">
-				<StackPanel>
-					<Label Content="クリックの発生"/>
-					<ComboBox x:Name="EnableClickComboBox" Height="Auto" SelectionChanged="EnableClickComboBox_SelectionChanged">
-						<ComboBoxItem Content="OFF"/>
-						<ComboBoxItem Content="ON"/>
-					</ComboBox>
-					<Label Content="クリック発生までのプログレスバー標示"/>
-					<ComboBox x:Name="EnableCircleProgressBarComboBox" Height="Auto" SelectionChanged="EnableClickComboBox_SelectionChanged">
-						<ComboBoxItem Content="OFF"/>
-						<ComboBoxItem Content="ON"/>
-					</ComboBox>
+				<ScrollViewer>
+					<StackPanel>
+						<Label Content="クリックの発生"/>
+						<ComboBox x:Name="EnableClickComboBox" Height="Auto" SelectionChanged="EnableClickComboBox_SelectionChanged">
+							<ComboBoxItem Content="OFF"/>
+							<ComboBoxItem Content="ON"/>
+						</ComboBox>
+						<Label Content="クリック発生までのプログレスバー標示"/>
+						<ComboBox x:Name="EnableCircleProgressBarComboBox" Height="Auto" SelectionChanged="EnableClickComboBox_SelectionChanged">
+							<ComboBoxItem Content="OFF"/>
+							<ComboBoxItem Content="ON"/>
+						</ComboBox>
 
-					<Label Content="クリック時の効果音"/>
-					<ComboBox x:Name="EnableSEComboBox" Height="Auto" SelectionChanged="EnableClickComboBox_SelectionChanged">
-						<ComboBoxItem Content="OFF"/>
-						<ComboBoxItem Content="ON"/>
-					</ComboBox>
+						<Label Content="クリック時の効果音"/>
+						<ComboBox x:Name="EnableSEComboBox" Height="Auto" SelectionChanged="EnableClickComboBox_SelectionChanged">
+							<ComboBoxItem Content="OFF"/>
+							<ComboBoxItem Content="ON"/>
+						</ComboBox>
 
-					<Label Content="クリック発生までの時間(ms)"/>
-					<controls:NumericUpDown MaxValue="10000" MinValue="1" DecimalPlace="0"/>
+						<Label Content="クリック発生までの間隔"/>
+						<controls:NumericUpDown x:Name="DetectCursorStayMillisecondTimeThresholdView" MaxValue="10000" MinValue="1" DecimalPlace="0" UnitText="ミリ秒"/>
+						<Label Content="クリック時の押下間隔"/>
+						<controls:NumericUpDown x:Name="MouseClickHoldMillisecondTimeView" MaxValue="1000" MinValue="1" DecimalPlace="0" UnitText="ミリ秒"/>
+						<Label Content="ダブルクリック時の連打間隔"/>
+						<controls:NumericUpDown x:Name="MouseDoubleClickUnPressMillisecondTimeView" MaxValue="1000" MinValue="1" DecimalPlace="0" UnitText="ミリ秒"/>
 
-				</StackPanel>
+						<Label Content="スクロール量"/>
+						<controls:NumericUpDown x:Name="MouseWheelScrollAmountView" MaxValue="100" MinValue="1" DecimalPlace="0"/>
+						<Label Content="スクロール間隔"/>
+						<controls:NumericUpDown x:Name="MouseWheelScrollIntervalMillisecondTimeView" MaxValue="1000" MinValue="1" DecimalPlace="0" UnitText="ミリ秒"/>
+
+					</StackPanel>
+				</ScrollViewer>
+
+			</TabItem>
+			<TabItem Visibility="Hidden"/>
+			<TabItem Header="About" x:Name="LicenseTab">
+				<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+					<TextBlock>
+				■KAOCursor ver1.0.0<LineBreak/>
+				Copyright (C) 2024, XMASASAM, all rights reserved.<LineBreak/>
+				<Hyperlink NavigateUri="https://opensource.org/license/mit" RequestNavigate="Hyperlink_Click">MITライセンス</Hyperlink>
+				です。<LineBreak/>
+				<LineBreak/>
+				<LineBreak/>
+				-----使用した技術・コンテンツ-----<LineBreak/>
+				<LineBreak/>
+
+				◆Windows Presentation Foundation<LineBreak/>
+				Copyright (C) .NET Foundation and Contributors, all rights reserved.<LineBreak/>
+				<Hyperlink NavigateUri="https://github.com/dotnet/wpf/blob/main/LICENSE.TXT"  RequestNavigate="Hyperlink_Click">MITライセンス</Hyperlink>
+				に従い「Windows Presentation Foundation」を使用しています。<LineBreak/>
+				<LineBreak/>
+				◆FFmpeg<LineBreak/>
+				Copyright (C) 2000-2023, FFmpeg Project, all rights reserved.<LineBreak/>
+				<Hyperlink NavigateUri="https://ffmpeg.org/legal.html"  RequestNavigate="Hyperlink_Click">FFmpegのライセンス</Hyperlink>
+				に従い
+				<Hyperlink NavigateUri="https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html"  RequestNavigate="Hyperlink_Click">LGPLライセンス</Hyperlink>
+				となるように「FFmpeg」を使用しています。<LineBreak/>
+				<LineBreak/>
+				◆OpenCV<LineBreak/>
+				Copyright (C) 2000-2022, Intel Corporation, all rights reserved.<LineBreak/>
+				Copyright (C) 2009-2011, Willow Garage Inc., all rights reserved.<LineBreak/>
+				Copyright (C) 2009-2016, NVIDIA Corporation, all rights reserved.<LineBreak/>
+				Copyright (C) 2010-2013, Advanced Micro Devices, Inc., all rights reserved.<LineBreak/>
+				Copyright (C) 2015-2023, OpenCV Foundation, all rights reserved.<LineBreak/>
+				Copyright (C) 2008-2016, Itseez Inc., all rights reserved.<LineBreak/>
+				Copyright (C) 2019-2023, Xperience AI, all rights reserved.<LineBreak/>
+				Copyright (C) 2019-2022, Shenzhen Institute of Artificial Intelligence and Robotics for Society, all rights reserved.<LineBreak/>
+				Copyright (C) 2022-2023, Southern University of Science And Technology, all rights reserved.<LineBreak/>
+				<Hyperlink NavigateUri="https://github.com/opencv/opencv/blob/master/LICENSE" RequestNavigate="Hyperlink_Click">Apacheライセンス2.0</Hyperlink>
+				に従い「OpenCV」を使用しています。<LineBreak/>
+				<LineBreak/>
+				◆Visual Studio Community 2022<LineBreak/>
+				Copyright (C) 2022, Microsoft Corporation, all rights reserved.<LineBreak/>
+				<Hyperlink NavigateUri="https://visualstudio.microsoft.com/ja/license-terms/vs2022-ga-community/" RequestNavigate="Hyperlink_Click">Visual Studio Community ライセンス条項</Hyperlink>
+				に従い「Visual Studio Community 2022」を使用して開発とビルドを行いました。
+				<LineBreak/>
+				<LineBreak/>
+
+				♪PC　マウス03<LineBreak/>
+				Copyright (C) 2012-2024 OtoLogic, all rights reserved.<LineBreak/>
+				<Hyperlink NavigateUri="https://otologic.jp/free/license.html" RequestNavigate="Hyperlink_Click">OtoLogicの利用規約</Hyperlink>
+				に従いOtoLogicの素材である「PC　マウス03」を使用しています。<LineBreak/>
+					</TextBlock>
+				
+				</ScrollViewer>
+				
+
 			</TabItem>
 		</TabControl>
 

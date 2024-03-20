@@ -1,4 +1,5 @@
 ﻿using KC2.DataStructs;
+using KC2NativeWrapper;
 using System.Configuration;
 using System.Data;
 using System.Windows;
@@ -16,12 +17,15 @@ namespace KC2
 
 		public void SetSaveData(SaveData data){
 			SaveData = data;
+			KC2HandsFreeMouse.SetPropety(SaveData.HansFreeMouseProperty);
 		}
 
 		private void Application_Startup(object sender, StartupEventArgs e)
 		{
 			SaveData = SaveData.Load();
 			PreSaveData = SaveData;
+			KC2HandsFreeMouse.SetPropety(SaveData.HansFreeMouseProperty);
+
 		}
 
 		private void Application_Exit(object sender, ExitEventArgs e)
