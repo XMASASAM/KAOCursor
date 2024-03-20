@@ -102,13 +102,13 @@ namespace CursorClickEvent {
 
 
 	void await_click(KC2_MouseEvent e) {
-	static sound::SoundEffect se(L"pc-mouse-3.mp3", 0);
+	//static sound::SoundEffect se(L"pc-mouse-3.mp3", 0);
 	/*
 		thread th = thread([] {
 			PlaySound(L"PC-Mouse03-06(R).wav", NULL, SND_ASYNC);
 		});
 		th.detach();*/
-		se.play(1);
+		//se.play(1);
 		if(!flg_click_allowed)return;
 		mouse_down(e);
 		std::this_thread::sleep_for(std::chrono::milliseconds(hfm_prop.MouseClickHoldMillisecondTime));
@@ -161,8 +161,9 @@ namespace CursorClickEvent {
 		if (e & KC2_MouseEvent_Wheel) {
 			flg_wheel_is_active=true;//!flg_wheel_is_active;
 			if (flg_wheel_is_active) {
-				th=thread(await_wheel,e);
-				th.detach();
+				
+			//	th=thread(await_wheel,e);
+			//	th.detach();
 			}
 			else {
 

@@ -303,6 +303,10 @@ namespace KC2.Dialogs
 					WindowOffset.Y = pos.Y - Top;
 				}else{
 					//上にほかのウィンドウがある場合通る
+					if (config.IsEnableClick)
+					{
+						KC2HandsFreeMouse.SetClickAllowed(1);
+					}
 					IsInsideMoveBorder = false;
 					Window_MouseLeave(this,null);
 					current_tag = null;
