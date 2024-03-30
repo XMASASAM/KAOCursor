@@ -148,6 +148,9 @@
     <ClCompile Include="soundeffect.cpp" />
     <ClCompile Include="timer.cpp" />
     <ClCompile Include="tracker.cpp" />
+    <ClCompile Include="old_tracker_face.cpp" />
+    <ClCompile Include="tracker_blob.cpp" />
+    <ClCompile Include="tracker_face.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="data_struct.h" />
@@ -161,6 +164,7 @@
     <ClInclude Include="soundeffect.h" />
     <ClInclude Include="timer.h" />
     <ClInclude Include="tracker.h" />
+    <ClInclude Include="old_tracker_face.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="face_detection_yunet_2023mar.onnx">

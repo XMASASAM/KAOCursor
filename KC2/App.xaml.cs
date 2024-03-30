@@ -17,14 +17,30 @@ namespace KC2
 
 		public void SetSaveData(SaveData data){
 			SaveData = data;
+			ApplySaveData();
+		}
+		void ApplySaveData(){
+			KC2HandsFreeMouse.SetEnablePlaySE(Convert.ToInt16(SaveData.IsEnablePlaySE));
 			KC2HandsFreeMouse.SetPropety(SaveData.HansFreeMouseProperty);
+
+			KC2HandsFreeMouse.ClearRangePoint();
+			if (SaveData.HasFaceRange)
+			{
+				KC2HandsFreeMouse.SetScreenRect(SaveData.ScreenRect);
+
+				for (int i = 0; i < 4; i++)
+				{
+					var r = SaveData.FaceRange[i];
+					KC2HandsFreeMouse.SetRangePoint(i, r.X, r.Y);
+				}
+			}
 		}
 
 		private void Application_Startup(object sender, StartupEventArgs e)
 		{
 			SaveData = SaveData.Load();
 			PreSaveData = SaveData;
-			KC2HandsFreeMouse.SetPropety(SaveData.HansFreeMouseProperty);
+			ApplySaveData();
 
 		}
 

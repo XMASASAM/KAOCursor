@@ -7,7 +7,7 @@
       xmlns:controls="clr-namespace:KC2.Controls"
 	  mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
-      Title="RangePage" d:Background="White" IsVisibleChanged="Page_IsVisibleChanged">
+      Title="RangePage" d:Background="White" IsVisibleChanged="Page_IsVisibleChanged" Unloaded="Page_Unloaded">
 
     <Grid>
 		<Grid.RowDefinitions>

@@ -31,6 +31,8 @@ namespace CursorClickEvent {
 	bool flg_drag_press = false;
 	bool flg_wheel_is_active = false;
 	bool flg_click_allowed = true;
+	bool flg_wheel_is_loop = false;
+	bool flg_enable_se = true;
 	enum KC2_MouseEvent {
 		KC2_MouseEvent_None=0,
 
@@ -58,7 +60,11 @@ namespace CursorClickEvent {
 		KC2_MouseEvent_Wheel             = 0b11000000,
 
 	};
-
+	void play_se() {
+		static sound::SoundEffect se(L"pc-mouse-3.mp3", 0);
+		if(flg_enable_se)
+		se.play(1);
+	}
 
 	void mouse_down(KC2_MouseEvent e) {
 		int flg = 0;
@@ -102,13 +108,12 @@ namespace CursorClickEvent {
 
 
 	void await_click(KC2_MouseEvent e) {
-	//static sound::SoundEffect se(L"pc-mouse-3.mp3", 0);
-	/*
-		thread th = thread([] {
+
+/*		thread th = thread([] {
 			PlaySound(L"PC-Mouse03-06(R).wav", NULL, SND_ASYNC);
 		});
 		th.detach();*/
-		//se.play(1);
+		play_se();
 		if(!flg_click_allowed)return;
 		mouse_down(e);
 		std::this_thread::sleep_for(std::chrono::milliseconds(hfm_prop.MouseClickHoldMillisecondTime));
@@ -124,11 +129,13 @@ namespace CursorClickEvent {
 
 	void await_wheel(KC2_MouseEvent e) {
 		if (!flg_click_allowed)return;
-
+		play_se();
+		CursorClickEvent::flg_wheel_is_loop = true;
 		while (flg_wheel_is_active) {
 			mouse_wheel(e);
 			std::this_thread::sleep_for(std::chrono::milliseconds(hfm_prop.MouseWheelScrollIntervalMillisecondTime));
 		}
+		CursorClickEvent::flg_wheel_is_loop = false;
 	}
 
 
@@ -148,9 +155,12 @@ namespace CursorClickEvent {
 		if (e & KC2_MouseEvent_Drag) {
 			flg_drag_press=!flg_drag_press;
 			if (flg_drag_press) {
+				play_se();
 				mouse_down(e);
 			}
 			else {
+				play_se();
+
 				mouse_up(e);
 			}
 		}
@@ -162,8 +172,8 @@ namespace CursorClickEvent {
 			flg_wheel_is_active=true;//!flg_wheel_is_active;
 			if (flg_wheel_is_active) {
 				
-			//	th=thread(await_wheel,e);
-			//	th.detach();
+				th=thread(await_wheel,e);
+				th.detach();
 			}
 			else {
 
@@ -188,6 +198,10 @@ namespace CursorClickEvent {
 		flg_drag_press = false;
 		flg_stay_prev = false;
 		flg_wheel_is_active = false;
+		while (flg_wheel_is_loop) {
+			flg_wheel_is_active = false;
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+		}
 
 	}
 
@@ -195,6 +209,9 @@ namespace CursorClickEvent {
 		flg_click_allowed = enable;
 	}
 
+	void set_enable_se(bool ok) {
+		flg_enable_se = ok;
+	}
 
 
 

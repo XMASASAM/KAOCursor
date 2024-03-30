@@ -37,6 +37,13 @@ namespace KC2NativeWrapper
 		KC2_MouseEvent_WheelDown = 0b10000000,
 		KC2_MouseEvent_Wheel = 0b11000000,
 
+		KC2_MouseEvent_Bashing     =  0b00100000000,
+		KC2_MouseEvent_LeftBashing =  0b00100000001,
+		KC2_MouseEvent_RightBasing =  0b00100000010,
+		KC2_MouseEvent_MiddleBasing = 0b00100000100,
+		KC2_MouseEvent_Stop         = 0b01000000000,
+		KC2_MouseEvent_ShowMenu     = 0b10000000000
+
 	}
 
 	[StructLayout(LayoutKind.Sequential)]
@@ -123,6 +130,21 @@ namespace KC2NativeWrapper
 		[DllImport(DLLNAME)]
 		static extern void kc2np_hansfreemouse_set_click_allowed(int enable);
 
+		[DllImport(DLLNAME)]
+
+		static extern void kc2np_hansfreemouse_call_se();
+		[DllImport(DLLNAME)]
+
+		static extern void kc2np_hansfreemouse_set_enable_se(int ok);
+
+		[DllImport(DLLNAME)]
+		static extern void kc2np_hansfreemouse_clear_range_point();
+
+		[DllImport(DLLNAME)]
+		static extern void kc2np_hansfreemouse_set_flg_setting_range(int flg);
+
+		[DllImport(DLLNAME)]
+		static extern int kc2np_hansfreemouse_detect_rampaning();
 		static public bool IsActive{ get;private set; }
 
 		static public bool StartHansFreeMouse(F4MVideoCapture cap, int track_points, int is_setting_range)
@@ -153,6 +175,10 @@ namespace KC2NativeWrapper
 
 		public static void SetRangePoint(int index , double x,double y){
 			kc2np_hansfreemouse_set_range_point(index, x,y);
+		}
+
+		public static void ClearRangePoint(){
+			kc2np_hansfreemouse_clear_range_point();
 		}
 
 		public static void SetScreenRect(Win32Mouse.Win32RECT rect){
@@ -188,6 +214,21 @@ namespace KC2NativeWrapper
 
 		public static void SetClickAllowed(int enable){
 			kc2np_hansfreemouse_set_click_allowed(enable);
+		}
+		public static void PlaySE(){
+			kc2np_hansfreemouse_call_se();
+		}
+
+		public static void SetEnablePlaySE(int ok){
+			kc2np_hansfreemouse_set_enable_se(ok);
+		}
+
+		public static void SetFlagSettingRange(int flg){
+			kc2np_hansfreemouse_set_flg_setting_range(flg);
+		}
+
+		public static bool DetectRampaging(){
+			return kc2np_hansfreemouse_detect_rampaning()==1;
 		}
 
 	}

@@ -33,7 +33,7 @@
     <ClCompile Include="device2.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="tracker.cpp">
+    <ClCompile Include="old_tracker_face.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="handsfreemouse.cpp">
@@ -49,6 +49,15 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="soundeffect.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="tracker.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="tracker_face.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="tracker_blob.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -74,7 +83,7 @@
     <ClInclude Include="f4mvideocapture.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="tracker.h">
+    <ClInclude Include="old_tracker_face.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="handsfreemouse.h">
@@ -84,6 +93,9 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="soundeffect.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="tracker.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

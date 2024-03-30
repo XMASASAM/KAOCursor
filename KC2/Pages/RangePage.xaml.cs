@@ -2,6 +2,7 @@
 using KC2NativeWrapper;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -27,22 +28,31 @@ namespace KC2.Pages
 		MainPage mainPage;
 		SaveData config;
 		DispatcherTimer timer = new DispatcherTimer();
-		List<Vec2d> range = new List<Vec2d>();
+		Vec2d[] range = new Vec2d[4];
+		Vec2d[] range_prev = new Vec2d[4];
 		Dialogs.NoButtonDialog? dialog;
 		int step = 0;
 		bool stay = false;
 		Stopwatch stopwatch = new Stopwatch();
 		Win32Mouse.Win32RECT sr;
+		Win32Mouse.Win32RECT sr_prev;
+		bool flg_hfm_active_prev = false;
 		public RangePage(MainPage main)
 		{
 			InitializeComponent();
+			
 			mainPage = main;
 			config = ((App)Application.Current).SaveData;
 
 
 			timer.Interval = new TimeSpan(0, 0, 0, 0, 30);
 			timer.Tick += new EventHandler(Update);
-
+			
+			if(config.HasFaceRange){
+				range_prev = config.FaceRange;
+				sr_prev = config.ScreenRect;
+				flg_hfm_active_prev = KC2HandsFreeMouse.IsActive;
+			}
 
 		}
 
@@ -66,7 +76,11 @@ namespace KC2.Pages
 
 					app.SetSaveData(config);
 				}*/
-				CaptureDevice.ReleaseHandsFreeMouse();
+				if(flg_hfm_active_prev){
+					KC2HandsFreeMouse.SetFlagSettingRange(0);
+				}else{
+					CaptureDevice.ReleaseHandsFreeMouse();
+				}
 				CameraView.Stop();//ReleaseCapture();
 			}
 		}
@@ -74,16 +88,28 @@ namespace KC2.Pages
 		private void StartButton_Click(object sender, RoutedEventArgs e)
 		{
 			CaptureDevice.ReleaseHandsFreeMouse();
-
-			if (CaptureDevice.StartHandsFreeMouse(1)){
+			bool ok = false;
+			if (KC2HandsFreeMouse.IsActive){
+				ok = true;
+				KC2HandsFreeMouse.SetFlagSettingRange(1);
+			}else{
+				ok = CaptureDevice.StartHandsFreeMouse(1);
+			}
+			if (ok){
 				var p = this.PointToScreen(new Point(0, 0));
 				sr = Win32Mouse.GetCurrentScreenRect((int)p.X, (int)p.Y).all;
+				config.ScreenRect = sr;
 				KC2HandsFreeMouse.SetScreenRect(sr);
+				KC2HandsFreeMouse.ClearRangePoint();
+				ReturnButton.Opacity = .5;
+				StartButton.Opacity = .5;
 				step = 0;
 				timer.Start();
 				dialog = new Dialogs.NoButtonDialog();
+				dialog.WindowStyle = WindowStyle.ToolWindow;
 				dialog.SetImage((BitmapImage)Application.Current.Resources["IPC_LT"]);
 				dialog.SetText("画面の左上を見てください");
+				dialog.Closing += new System.ComponentModel.CancelEventHandler(Stop);
 				dialog.ShowDialog();
 
 
@@ -140,6 +166,7 @@ namespace KC2.Pages
 		void Step3(){
 			if(step==3&& !dialog.IsMoving && 1000 <stopwatch.ElapsedMilliseconds&& stay){
 				var p = KC2HandsFreeMouse.GetPointSensor();
+				range[0]=new Vec2d(p.X,p.Y);
 				KC2HandsFreeMouse.SetRangePoint(0, p.X, p.Y);
 				dialog.SetText("画面の右上を見てください");
 				dialog.SetImage((BitmapImage)Application.Current.Resources["IPC_RT"]);
@@ -166,6 +193,7 @@ namespace KC2.Pages
 			if (step == 5 && !dialog.IsMoving && 1000 < stopwatch.ElapsedMilliseconds && stay)
 			{
 				var p = KC2HandsFreeMouse.GetPointSensor();
+				range[1] = new Vec2d(p.X, p.Y);
 				KC2HandsFreeMouse.SetRangePoint(1, p.X, p.Y);
 
 
@@ -197,6 +225,7 @@ namespace KC2.Pages
 			if (step == 7 && !dialog.IsMoving && 1000 < stopwatch.ElapsedMilliseconds && stay)
 			{
 				var p = KC2HandsFreeMouse.GetPointSensor();
+				range[2] = new Vec2d(p.X, p.Y);
 				KC2HandsFreeMouse.SetRangePoint(2, p.X, p.Y);
 
 
@@ -223,6 +252,7 @@ namespace KC2.Pages
 		void Step9(){
 			if(step==9 && !dialog.IsMoving && stay){
 				var p = KC2HandsFreeMouse.GetPointSensor();
+				range[3] = new Vec2d(p.X, p.Y);
 				KC2HandsFreeMouse.SetRangePoint(3, p.X, p.Y);
 
 				Vec2d t = new Vec2d();
@@ -239,10 +269,49 @@ namespace KC2.Pages
 
 		void Step10(){
 			if(step==10 && !dialog.IsMoving && 1500 < stopwatch.ElapsedMilliseconds){
+				ApplyFraceRange(range);
+				ReturnButton.Opacity = 1.0;
+				StartButton.Opacity = 1.0;
+				config.FaceRangeDeviceID = CaptureDevice.GetID();
+				stopwatch.Stop();
+				timer.Stop();
 				dialog.Close();
+
 			}
 		}
 
+		void ApplyFraceRange(Vec2d[] ra){
+			KC2HandsFreeMouse.ClearRangePoint();
+			for(int i = 0;i<4;i++){
+				var r = ra[i];
+				KC2HandsFreeMouse.SetRangePoint(i,r.X, r.Y);
+			}
+			if (flg_hfm_active_prev){
+				KC2HandsFreeMouse.SetFlagSettingRange(0);
+			}
+			config.FaceRange = ra;
+			config.HasFaceRange = true;
+
+		}
+
+		private void Page_Unloaded(object sender, RoutedEventArgs e)
+		{
+			var app = ((App)Application.Current);
+
+			if (!config.Equals(app.SaveData)){
+				app.SetSaveData(config);
+			}
+		}
+
+		void Stop(object? sender,CancelEventArgs e){
+			if(config.HasFaceRange){
+				ApplyFraceRange(config.FaceRange);
+			}
+			ReturnButton.Opacity = 1.0;
+			StartButton.Opacity = 1.0;
+			stopwatch.Stop();
+			timer.Stop();
+		}
 
 	}
 }

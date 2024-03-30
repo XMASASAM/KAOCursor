@@ -11,187 +11,199 @@
       Title="ConfigPage" IsVisibleChanged="Page_IsVisibleChanged" Loaded="Page_Loaded">
 
 	<Grid>
-		<Grid.RowDefinitions>
-			<RowDefinition Height="1*" MinHeight="100"/>
-			<RowDefinition Height="2*"/>
-		</Grid.RowDefinitions>
-		<Grid Grid.Row="0" Margin="0,0,0,16">
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition MinWidth="100"/>
-				<ColumnDefinition Width="Auto"/>
-			</Grid.ColumnDefinitions>
-			<Button x:Name="ReturnButton" Grid.Column="0" Content="戻る" Margin="3"  Click="ReturnButton_Click"/>
-			<Label Grid.Column="1" Padding="24,0,24,0" Content="設定画面" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-		</Grid>
-		<UniformGrid Columns="{Binding ElementName=Tab1,Path=Items.Count}" Margin="5,0">
-			<FrameworkElement x:Name="tabItemWidth"/>
-			<!-- no need to add the other three -->
-		</UniformGrid>
+		<Grid>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="1*" MinHeight="100"/>
+				<RowDefinition Height="2*"/>
+			</Grid.RowDefinitions>
+			<Grid Grid.Row="0" Margin="0,0,0,16">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition MinWidth="100"/>
+					<ColumnDefinition Width="Auto"/>
+				</Grid.ColumnDefinitions>
+				<Button x:Name="ReturnButton" Grid.Column="0" Content="戻る" Margin="3"  Click="ReturnButton_Click"/>
+				<Label Grid.Column="1" Padding="24,0,24,0" Content="設定画面" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+			</Grid>
+			<UniformGrid Columns="{Binding ElementName=Tab1,Path=Items.Count}" Margin="5,0">
+				<FrameworkElement x:Name="tabItemWidth"/>
+				<!-- no need to add the other three -->
+			</UniformGrid>
 
-		<TabControl Grid.Row="1" x:Name="Tab1">
-			<TabControl.Resources>
-				<Style TargetType="TabItem">
-					<Setter Property="Width" Value="{Binding ElementName=tabItemWidth,Path=ActualWidth}"/>
-				</Style>
-			</TabControl.Resources>
-			<TabItem Header="カメラ">
-				<Grid Margin="10">
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition/>
-						<ColumnDefinition/>
-					</Grid.ColumnDefinitions>
-					<ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
-						<StackPanel>
-							<Label Content="デバイス"/>
-							<ComboBox Margin="0,0,0,16" x:Name="DeviceComboBox" ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=local:ConfigPage},Path=DeviceList}" SelectionChanged="ComboBox_SelectionChanged" >
-								<ComboBox.ItemTemplate>
-									<DataTemplate>
-										<Label Content="{Binding Name}" Padding="5,0,5,0"/>
-									</DataTemplate>
-								</ComboBox.ItemTemplate>
-							</ComboBox>
-							<Label Content="画質"/>
-							<ComboBox x:Name="ResolutionComboBox" Margin="0,0,0,16" ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=local:ConfigPage},Path=ResolutionList}" SelectionChanged="ResolutionComboBox_SelectionChanged">
-								<ComboBox.ItemTemplate>
-									<DataTemplate>
-										<Label Padding="0">
-											<TextBlock>
-												<TextBlock.Text>
-													<MultiBinding StringFormat="{}{0}x{1} fps{2}">
-														<Binding Path="Width"/>
-														<Binding Path="Height"/>
-														<Binding Path="FPS"/>
-													</MultiBinding>
-												</TextBlock.Text>
-											</TextBlock>
-										</Label>
-									</DataTemplate>
-								</ComboBox.ItemTemplate>
-							</ComboBox>
-							<Label Content="回転"/>
-							<ComboBox x:Name="TransposeComboBox" Margin="0,0,0,16" SelectionChanged="TransposeComboBox_SelectionChanged" ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=local:ConfigPage},Path=AngleList}">
-								<ComboBox.ItemTemplate>
-									<DataTemplate>
-										<Label Padding="0">
-											<TextBlock>
-												<TextBlock.Text>
-													<Binding StringFormat="{}{0}度"/>
-												</TextBlock.Text>
-											</TextBlock>
-										</Label>
-									</DataTemplate>
-								</ComboBox.ItemTemplate>
-							</ComboBox>
-							<Label Content="反転"/>
-							<ComboBox x:Name="TurnComboBox" Margin="0,0,0,16" SelectionChanged="TurnComboBox_SelectionChanged">
-								<ComboBoxItem Content="OFF"/>
-								<ComboBoxItem Content="ON"/>
-							</ComboBox>
-						</StackPanel>
-					</ScrollViewer>
-					<Grid Grid.Column="1" Margin="10,0,0,0">
-						<Grid.RowDefinitions>
-							<RowDefinition Height="Auto"/>
-							<RowDefinition/>
-
-						</Grid.RowDefinitions>
-						<Label Grid.Row="0" Content="カメラプレビュー" BorderThickness="1" BorderBrush="Gray" HorizontalContentAlignment="Center"/>
-						<Grid Grid.Row="1">
-							<controls:CaptureDeviceView x:Name="CameraPreviewView" BorderThickness="1,0,1,1" BorderBrush="Gray" Background="Black"/>
-
-							<Label Foreground="White" Background="Black" VerticalAlignment="Bottom" HorizontalAlignment="Left" BorderThickness="1" BorderBrush="Transparent">
-								<TextBlock>
-									<TextBlock.Text>
-										<MultiBinding StringFormat="{}{0}x{1} FPS:{2}">
-											<Binding ElementName="CameraPreviewView" Path="CurrentFrame.Width"/>
-											<Binding ElementName="CameraPreviewView" Path="CurrentFrame.Height"/>
-											<Binding ElementName="CameraPreviewView" Path="CaptureFPS"/>
-										</MultiBinding>
-										<!--Binding StringFormat="FPS : {0}" ElementName="CameraPreviewView" Path="FPSDevice"/-->
-									</TextBlock.Text>
-								</TextBlock>
-							</Label>
-						</Grid>
-
-					</Grid>
-				</Grid>
-
-			</TabItem>
-			<TabItem Header="追跡アルゴリズム">
-			</TabItem>
-			<TabItem Header="カーソル">
-				<StackPanel>
-					<Grid>
+			<TabControl Grid.Row="1" x:Name="Tab1">
+				<TabControl.Resources>
+					<Style TargetType="TabItem">
+						<Setter Property="Width" Value="{Binding ElementName=tabItemWidth,Path=ActualWidth}"/>
+					</Style>
+				</TabControl.Resources>
+				<TabItem Header="カメラ">
+					<Grid Margin="10">
 						<Grid.ColumnDefinitions>
 							<ColumnDefinition/>
 							<ColumnDefinition/>
-							<ColumnDefinition/>
 						</Grid.ColumnDefinitions>
-						<Grid.Resources>
-							<Style TargetType="StackPanel">
-								<Setter Property="Margin" Value="0,3,3,3"/>
-							</Style>
-						</Grid.Resources>
-						<StackPanel Grid.Column="0">
-							<Label Content="移動倍率"/>
-							<controls:NumericUpDown x:Name="CursorMoveMultiplierView" MaxValue="99999" MinValue="1" DecimalPlace="1" UnitText="倍"/>
-						</StackPanel>
-						<StackPanel Grid.Column="1">
-							<Label Content="X軸の移動倍率"/>
-							<controls:NumericUpDown x:Name="CursorMoveXFactorView" MaxValue="99999" MinValue="1" DecimalPlace="1" UnitText="倍"/>
-						</StackPanel>
-						<StackPanel Grid.Column="2">
-							<Label Content="Y軸の移動倍率"/>
-							<controls:NumericUpDown x:Name="CursorMoveYFactorView" MaxValue="99999" MinValue="1" DecimalPlace="1" UnitText="倍"/>
-						</StackPanel>
+						<ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+							<StackPanel>
+								<Label Content="デバイス"/>
+								<ComboBox Margin="0,0,0,16" x:Name="DeviceComboBox" ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=local:ConfigPage},Path=DeviceList}" SelectionChanged="ComboBox_SelectionChanged" MouseWheel="DeviceComboBox_MouseWheel" PreviewMouseWheel="DeviceComboBox_PreviewMouseWheel" >
+									<ComboBox.ItemTemplate>
+										<DataTemplate>
+											<Label Content="{Binding Name}" Padding="5,0,5,0"/>
+										</DataTemplate>
+									</ComboBox.ItemTemplate>
+								</ComboBox>
+								<Label Content="画質"/>
+								<ComboBox x:Name="ResolutionComboBox" Margin="0,0,0,16" ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=local:ConfigPage},Path=ResolutionList}" SelectionChanged="ResolutionComboBox_SelectionChanged" PreviewMouseWheel="DeviceComboBox_PreviewMouseWheel" >
+									<ComboBox.ItemTemplate>
+										<DataTemplate>
+											<Label Padding="0">
+												<TextBlock>
+													<TextBlock.Text>
+														<MultiBinding StringFormat="{}{0}x{1} fps{2}">
+															<Binding Path="Width"/>
+															<Binding Path="Height"/>
+															<Binding Path="FPS"/>
+														</MultiBinding>
+													</TextBlock.Text>
+												</TextBlock>
+											</Label>
+										</DataTemplate>
+									</ComboBox.ItemTemplate>
+								</ComboBox>
+								<Label Content="回転"/>
+								<ComboBox x:Name="TransposeComboBox" Margin="0,0,0,16" SelectionChanged="TransposeComboBox_SelectionChanged" ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=local:ConfigPage},Path=AngleList}">
+									<ComboBox.ItemTemplate>
+										<DataTemplate>
+											<Label Padding="0">
+												<TextBlock>
+													<TextBlock.Text>
+														<Binding StringFormat="{}{0}度"/>
+													</TextBlock.Text>
+												</TextBlock>
+											</Label>
+										</DataTemplate>
+									</ComboBox.ItemTemplate>
+								</ComboBox>
+								<Label Content="反転"/>
+								<ComboBox x:Name="TurnComboBox" Margin="0,0,0,16" SelectionChanged="TurnComboBox_SelectionChanged">
+									<ComboBoxItem Content="OFF"/>
+									<ComboBoxItem Content="ON"/>
+								</ComboBox>
+							</StackPanel>
+						</ScrollViewer>
+						<Grid Grid.Column="1" Margin="10,0,0,0">
+							<Grid.RowDefinitions>
+								<RowDefinition Height="Auto"/>
+								<RowDefinition/>
+
+							</Grid.RowDefinitions>
+							<Label Grid.Row="0" Content="カメラプレビュー" BorderThickness="1" BorderBrush="Gray" HorizontalContentAlignment="Center"/>
+							<Grid Grid.Row="1">
+								<controls:CaptureDeviceView x:Name="CameraPreviewView" BorderThickness="1,0,1,1" BorderBrush="Gray" Background="Black"/>
+
+								<Label Foreground="White" Background="Black" VerticalAlignment="Bottom" HorizontalAlignment="Left" BorderThickness="1" BorderBrush="Transparent">
+									<TextBlock>
+										<TextBlock.Text>
+											<MultiBinding StringFormat="{}{0}x{1} FPS:{2}">
+												<Binding ElementName="CameraPreviewView" Path="CurrentFrame.Width"/>
+												<Binding ElementName="CameraPreviewView" Path="CurrentFrame.Height"/>
+												<Binding ElementName="CameraPreviewView" Path="CaptureFPS"/>
+											</MultiBinding>
+											<!--Binding StringFormat="FPS : {0}" ElementName="CameraPreviewView" Path="FPSDevice"/-->
+										</TextBlock.Text>
+									</TextBlock>
+								</Label>
+							</Grid>
+
+						</Grid>
 					</Grid>
-					<Label Content="移動閾値"/>
-					<controls:NumericUpDown x:Name="CursorMovePixelThresholdView"  MaxValue="99999" MinValue="1" DecimalPlace="1" UnitText="pixel"/>
 
-					<Label Content="ブレ吸収率"/>
-					<controls:NumericUpDown x:Name="LowPathRateView" MaxValue="99" MinValue="1" DecimalPlace="0" UnitText="%"/>
-				</StackPanel>
-			</TabItem>
-			<TabItem Header="クリック">
-				<ScrollViewer>
+				</TabItem>
+				<TabItem Header="追跡アルゴリズム">
+				</TabItem>
+				<TabItem Header="カーソル">
 					<StackPanel>
-						<Label Content="クリックの発生"/>
-						<ComboBox x:Name="EnableClickComboBox" Height="Auto" SelectionChanged="EnableClickComboBox_SelectionChanged">
-							<ComboBoxItem Content="OFF"/>
-							<ComboBoxItem Content="ON"/>
-						</ComboBox>
-						<Label Content="クリック発生までのプログレスバー標示"/>
-						<ComboBox x:Name="EnableCircleProgressBarComboBox" Height="Auto" SelectionChanged="EnableClickComboBox_SelectionChanged">
-							<ComboBoxItem Content="OFF"/>
-							<ComboBoxItem Content="ON"/>
-						</ComboBox>
+						<Grid>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition/>
+								<ColumnDefinition/>
+								<ColumnDefinition/>
+							</Grid.ColumnDefinitions>
+							<Grid.Resources>
+								<Style TargetType="StackPanel">
+									<Setter Property="Margin" Value="0,3,3,3"/>
+								</Style>
+							</Grid.Resources>
+							<StackPanel Grid.Column="0">
+								<Label Content="移動倍率"/>
+								<controls:NumericUpDown x:Name="CursorMoveMultiplierView" MaxValue="99999" MinValue="1" DecimalPlace="1" UnitText="倍"/>
+							</StackPanel>
+							<StackPanel Grid.Column="1">
+								<Label Content="X軸の移動倍率"/>
+								<controls:NumericUpDown x:Name="CursorMoveXFactorView" MaxValue="99999" MinValue="1" DecimalPlace="1" UnitText="倍"/>
+							</StackPanel>
+							<StackPanel Grid.Column="2">
+								<Label Content="Y軸の移動倍率"/>
+								<controls:NumericUpDown x:Name="CursorMoveYFactorView" MaxValue="99999" MinValue="1" DecimalPlace="1" UnitText="倍"/>
+							</StackPanel>
+						</Grid>
+						<Label Content="移動閾値"/>
+						<controls:NumericUpDown x:Name="CursorMovePixelThresholdView"  MaxValue="99999" MinValue="1" DecimalPlace="1" UnitText="pixel"/>
 
-						<Label Content="クリック時の効果音"/>
-						<ComboBox x:Name="EnableSEComboBox" Height="Auto" SelectionChanged="EnableClickComboBox_SelectionChanged">
-							<ComboBoxItem Content="OFF"/>
-							<ComboBoxItem Content="ON"/>
-						</ComboBox>
-
-						<Label Content="クリック発生までの間隔"/>
-						<controls:NumericUpDown x:Name="DetectCursorStayMillisecondTimeThresholdView" MaxValue="10000" MinValue="1" DecimalPlace="0" UnitText="ミリ秒"/>
-						<Label Content="クリック時の押下間隔"/>
-						<controls:NumericUpDown x:Name="MouseClickHoldMillisecondTimeView" MaxValue="1000" MinValue="1" DecimalPlace="0" UnitText="ミリ秒"/>
-						<Label Content="ダブルクリック時の連打間隔"/>
-						<controls:NumericUpDown x:Name="MouseDoubleClickUnPressMillisecondTimeView" MaxValue="1000" MinValue="1" DecimalPlace="0" UnitText="ミリ秒"/>
-
-						<Label Content="スクロール量"/>
-						<controls:NumericUpDown x:Name="MouseWheelScrollAmountView" MaxValue="100" MinValue="1" DecimalPlace="0"/>
-						<Label Content="スクロール間隔"/>
-						<controls:NumericUpDown x:Name="MouseWheelScrollIntervalMillisecondTimeView" MaxValue="1000" MinValue="1" DecimalPlace="0" UnitText="ミリ秒"/>
-
+						<Label Content="ブレ吸収率"/>
+						<controls:NumericUpDown x:Name="LowPathRateView" MaxValue="99" MinValue="1" DecimalPlace="0" UnitText="%"/>
 					</StackPanel>
-				</ScrollViewer>
+				</TabItem>
+				<TabItem Header="クリック">
+					<ScrollViewer>
+						<StackPanel>
+							<Label Content="クリックの発生"/>
+							<ComboBox x:Name="EnableClickComboBox" Height="Auto" SelectionChanged="EnableClickComboBox_SelectionChanged">
+								<ComboBoxItem Content="OFF"/>
+								<ComboBoxItem Content="ON"/>
+							</ComboBox>
+							<Label Content="クリック発生までのプログレスバー表示"/>
+							<ComboBox x:Name="EnableCircleProgressBarComboBox" Height="Auto" SelectionChanged="EnableCircleProgressBarComboBox_SelectionChanged">
+								<ComboBoxItem Content="OFF"/>
+								<ComboBoxItem Content="ON"/>
+							</ComboBox>
 
-			</TabItem>
-			<TabItem Visibility="Hidden"/>
-			<TabItem Header="About" x:Name="LicenseTab">
-				<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-					<TextBlock>
+							<Label Content="クリック時の効果音"/>
+							<ComboBox x:Name="EnableSEComboBox" Height="Auto" SelectionChanged="EnableSEComboBox_SelectionChanged">
+								<ComboBoxItem Content="OFF"/>
+								<ComboBoxItem Content="ON"/>
+							</ComboBox>
+
+							<Label Content="クリック発生までの間隔"/>
+							<controls:NumericUpDown x:Name="DetectCursorStayMillisecondTimeThresholdView" MaxValue="10000" MinValue="1" DecimalPlace="0" UnitText="ミリ秒"/>
+							<Label Content="クリック時の押下間隔"/>
+							<controls:NumericUpDown x:Name="MouseClickHoldMillisecondTimeView" MaxValue="1000" MinValue="1" DecimalPlace="0" UnitText="ミリ秒"/>
+							<Label Content="ダブルクリック時の連打間隔"/>
+							<controls:NumericUpDown x:Name="MouseDoubleClickUnPressMillisecondTimeView" MaxValue="1000" MinValue="1" DecimalPlace="0" UnitText="ミリ秒"/>
+
+							<Label Content="スクロール量"/>
+							<controls:NumericUpDown x:Name="MouseWheelScrollAmountView" MaxValue="100" MinValue="1" DecimalPlace="0"/>
+							<Label Content="スクロール間隔"/>
+							<controls:NumericUpDown x:Name="MouseWheelScrollIntervalMillisecondTimeView" MaxValue="1000" MinValue="1" DecimalPlace="0" UnitText="ミリ秒"/>
+
+						</StackPanel>
+					</ScrollViewer>
+
+				</TabItem>
+
+				<TabItem Header="可動域">
+					<StackPanel>
+					<Label Content="ブレ許容範囲"/>
+						<controls:NumericUpDown x:Name="DetectStayPixelThresholdPow2View" MaxValue="10" MinValue="1" DecimalPlace="0" UnitText="pixel"/>
+					<Label Content="ポイント決定間隔"/>
+						<controls:NumericUpDown x:Name="DetectStayMillisecondTimeThresholdView" MaxValue="1000" MinValue="1" DecimalPlace="0" UnitText="ミリ秒"/>
+					</StackPanel>
+
+				</TabItem>
+
+				<TabItem Visibility="Hidden"/>
+				<TabItem Header="About" x:Name="LicenseTab">
+					<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+						<TextBlock>
 				■KAOCursor ver1.0.0<LineBreak/>
 				Copyright (C) 2024, XMASASAM, all rights reserved.<LineBreak/>
 				<Hyperlink NavigateUri="https://opensource.org/license/mit" RequestNavigate="Hyperlink_Click">MITライセンス</Hyperlink>
@@ -237,13 +249,26 @@
 				Copyright (C) 2012-2024 OtoLogic, all rights reserved.<LineBreak/>
 				<Hyperlink NavigateUri="https://otologic.jp/free/license.html" RequestNavigate="Hyperlink_Click">OtoLogicの利用規約</Hyperlink>
 				に従いOtoLogicの素材である「PC　マウス03」を使用しています。<LineBreak/>
-					</TextBlock>
-				
-				</ScrollViewer>
-				
+						</TextBlock>
 
-			</TabItem>
-		</TabControl>
+					</ScrollViewer>
 
+
+				</TabItem>
+			</TabControl>
+		</Grid>
+		<Grid x:Name="OverLayRectangle" Visibility="Hidden">
+			<Rectangle Fill="Black" Opacity=".5"/>
+			<Grid>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="1*"/>
+					<ColumnDefinition Width="3*"/>
+					<ColumnDefinition Width="1*"/>
+				</Grid.ColumnDefinitions>
+				<ProgressBar Grid.Column="1" IsIndeterminate="True" Height="32"/>
+				<Label Grid.Column="1" Content="処理中" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+			</Grid>
+			
+		</Grid>
 	</Grid>
 </Page>

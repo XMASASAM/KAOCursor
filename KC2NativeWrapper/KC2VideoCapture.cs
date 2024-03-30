@@ -50,7 +50,6 @@ namespace KC2NativeWrapper
 		}
 
 
-
 	};
 	public class KC2VideoCapture
     {

@@ -53,6 +53,7 @@ namespace KC2.Pages
 			this.mainPage = mainPage;
 
 			InitializeComponent();
+			CloseLoadOverLay();
 			config = ((App)Application.Current).SaveData;
 
 			int index = KC2DeviceInformation.GetIndex(config.DeviceName, config.DevicePath);
@@ -64,7 +65,8 @@ namespace KC2.Pages
 			KC2DeviceInformation.Init();
 			DeviceList = KC2DeviceInformation.DeviceList;
 			EnableClickComboBox.SelectedIndex = Convert.ToInt32(config.IsEnableClick); //Convert.ToInt32(KC2HandsFreeMouse.GetEnableClick());
-
+			EnableCircleProgressBarComboBox.SelectedIndex = Convert.ToInt32(config.IsEnableShowCircleProgressBar);
+			EnableSEComboBox.SelectedIndex = Convert.ToInt32(config.IsEnablePlaySE);
 		}
 		private void Page_Loaded(object sender, RoutedEventArgs e)
 		{
@@ -88,6 +90,8 @@ namespace KC2.Pages
 			MouseDoubleClickUnPressMillisecondTimeView.SetCurrentValue(hp.MouseDoubleClickUnPressMillisecondTime, 0);
 			MouseWheelScrollAmountView.SetCurrentValue(hp.MouseWheelScrollAmount, 0);
 			MouseWheelScrollIntervalMillisecondTimeView.SetCurrentValue(hp.MouseWheelScrollIntervalMillisecondTime, 0);
+			DetectStayPixelThresholdPow2View.SetCurrentValue((int)Math.Round( Math.Sqrt(hp.DetectStayPixelThresholdPow2)), 0);
+			DetectStayMillisecondTimeThresholdView.SetCurrentValue(hp.DetectStayMillisecondTimeThreshold, 0);
 		}
 
 		void LoadHansFreeMousePropertyFromUI(){
@@ -102,6 +106,8 @@ namespace KC2.Pages
 			hp.MouseDoubleClickUnPressMillisecondTime = MouseDoubleClickUnPressMillisecondTimeView.GetCurrentValueInt(0);
 			hp.MouseWheelScrollAmount = MouseWheelScrollAmountView.GetCurrentValueInt(0);
 			hp.MouseWheelScrollIntervalMillisecondTime = MouseWheelScrollIntervalMillisecondTimeView.GetCurrentValueInt(0);
+			hp.DetectStayPixelThresholdPow2 =(int)Math.Round( Math.Pow( DetectStayPixelThresholdPow2View.GetCurrentValueInt(0),2));
+			hp.DetectStayMillisecondTimeThreshold = DetectStayMillisecondTimeThresholdView.GetCurrentValueInt(0);
 			config.HansFreeMouseProperty = hp;
 		}
 
@@ -134,35 +140,67 @@ namespace KC2.Pages
 					//mainPage.ChangeCaptureView(index,config.CaptureProperty);
 
 					//CameraPreviewView.StartCapture(index,config.CaptureProperty);
-					if(CaptureDevice.GetCurrentIndex()!=index)
-						CaptureDevice.Open(index,config.CaptureProperty);
-
-					ResolutionList.Clear();
-					var dinfo = KC2DeviceInformation.DeviceList[index];
-					Dictionary<Vec2I, VideoInfo> dic = new Dictionary<Vec2I, VideoInfo>();
-					for (int i = 0; i < dinfo.VideoInfoListSize; i++)
-					{
-						var vinfo = dinfo.GetVideoInfo(i);
-						Vec2I s = new(vinfo.Width, vinfo.Height);
-						if (dic.ContainsKey(s))
+					if (CaptureDevice.GetCurrentIndex() != index){
+						if (CheckHFM())
 						{
-							if (vinfo.FPS < dic[s].FPS) continue;
-							dic[s] = vinfo;
+							index = KC2DeviceInformation.GetIndex(config.DeviceName, config.DevicePath);
+							if (0 <= index)
+							{
+								DeviceComboBox.SelectedIndex = index;
+								//	CameraPreviewView.StartCapture(index);
+							}
+							e.Handled = true;
+							return;
 						}
-						else
-						{
-							dic.Add(s, vinfo);
-						}
+						ShowLoadOverLay();
+						
 					}
 
-					foreach (var i in dic){
-						ResolutionList.Add(i.Value);
-					}
-					ResolutionComboBox.Items.Refresh();
-					config.DeviceName = dinfo.Name;
-					config.DevicePath = dinfo.Path;
+					DispatcherTimer open_timer = new DispatcherTimer();
 
-					ApplyResolution();
+					Thread open_thread = new Thread(new ThreadStart(()=> {
+						if (CaptureDevice.GetCurrentIndex() != index)
+						{
+							CaptureDevice.Open(index, config.CaptureProperty);
+						}
+						open_timer.Start();
+					}));
+					open_timer.Interval = new TimeSpan(0);
+					open_timer.Tick += new EventHandler((es,ee)=> {
+
+						CloseLoadOverLay();
+
+						ResolutionList.Clear();
+						var dinfo = KC2DeviceInformation.DeviceList[index];
+						Dictionary<Vec2I, VideoInfo> dic = new Dictionary<Vec2I, VideoInfo>();
+						for (int i = 0; i < dinfo.VideoInfoListSize; i++)
+						{
+							var vinfo = dinfo.GetVideoInfo(i);
+							Vec2I s = new(vinfo.Width, vinfo.Height);
+							if (dic.ContainsKey(s))
+							{
+								if (vinfo.FPS < dic[s].FPS) continue;
+								dic[s] = vinfo;
+							}
+							else
+							{
+								dic.Add(s, vinfo);
+							}
+						}
+
+						foreach (var i in dic)
+						{
+							ResolutionList.Add(i.Value);
+						}
+						ResolutionComboBox.Items.Refresh();
+						config.DeviceName = dinfo.Name;
+						config.DevicePath = dinfo.Path;
+
+						ApplyResolution();
+						open_timer.Stop();
+					});
+					open_thread.Start();
+
 				}
 			}
 		}
@@ -171,33 +209,47 @@ namespace KC2.Pages
 		{
 			ComboBox cb = sender as ComboBox;
 
-			 
 
-			if (cb != null) {
+
+			if (cb != null)
+			{
 				if (cb.SelectedIndex == -1) return;
 				VideoInfo vi = (VideoInfo)cb.SelectedItem;
 
-				if(vi.Width==config.CaptureProperty.Width && vi.Height==config.CaptureProperty.Height) {
+				if (vi.Width == config.CaptureProperty.Width && vi.Height == config.CaptureProperty.Height)
+				{
 					return;
 				}
-
-				//config.DeviceSize = new(vi.Width, vi.Height);
-				
-				//mainPage.ReleaseCaptureView();
-				//CameraPreviewView.ReleaseCapture();
+				if (CheckHFM())
+				{
+					e.Handled = true;
+					ApplyResolution();
+					return;
+				}
 
 				CaptureProperty prop = config.CaptureProperty;//new CaptureProperty {
 															  //	Width = vi.Width, Height = vi.Height, FlagFpsOption = 1
 															  //};
 				prop.Width = vi.Width;
 				prop.Height = vi.Height;
-				
+
 				config.CaptureProperty = prop;
 
 
-				//mainPage.ChangeCaptureView(DeviceComboBox.SelectedIndex, prop);
-				//CameraPreviewView.StartCapture(DeviceComboBox.SelectedIndex,prop);
-				CaptureDevice.Open(DeviceComboBox.SelectedIndex, prop);
+				ShowLoadOverLay();
+				DispatcherTimer open_timer = new DispatcherTimer();
+				int dindex = DeviceComboBox.SelectedIndex;
+				Thread open_thread = new Thread(new ThreadStart(()=>{
+					CaptureDevice.Open(dindex, prop);
+					open_timer.Start();
+				}));
+				open_timer.Tick += new EventHandler((s, e) =>
+				{
+					CloseLoadOverLay();
+					open_timer.Stop();
+				});
+				open_timer.Interval = new TimeSpan(0);
+				open_thread.Start();
 			}
 		}
 
@@ -226,10 +278,20 @@ namespace KC2.Pages
 
 		private void TransposeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
+			
 			int d = (int)(TransposeComboBox.SelectedItem);
 			var prop = config.CaptureProperty;
 
 			if (prop.Angle == d) return;
+
+			if (CheckHFM())
+			{
+				e.Handled = true;
+
+				TransposeComboBox.SelectedIndex = AngleList.IndexOf(config.CaptureProperty.Angle);
+				
+				return;
+			}
 
 			prop.Angle = d;
 			config.CaptureProperty = prop;
@@ -244,6 +306,14 @@ namespace KC2.Pages
 			var prop = config.CaptureProperty;
 
 			if(prop.HorizonFlip == d) return;
+
+			if (CheckHFM())
+			{
+				e.Handled = true;
+
+				TurnComboBox.SelectedIndex = config.CaptureProperty.HorizonFlip;
+				return;
+			}
 
 			prop.HorizonFlip = d;
 			config.CaptureProperty = prop;
@@ -288,5 +358,77 @@ namespace KC2.Pages
 			System.Diagnostics.Process.Start(sInfo);
 			e.Handled = true;
 		}
-    }
+
+		private void EnableCircleProgressBarComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			int d = EnableCircleProgressBarComboBox.SelectedIndex;
+			if (d == 0)
+			{//OFF
+				config.IsEnableShowCircleProgressBar = false;
+			}
+			if (d == 1)
+			{//ON
+				config.IsEnableShowCircleProgressBar = true;
+
+			}
+
+		}
+
+		private void EnableSEComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			int d = EnableSEComboBox.SelectedIndex;
+			if (d == 0)
+			{//OFF
+				config.IsEnablePlaySE = false;
+				KC2HandsFreeMouse.SetEnablePlaySE(0);
+			}
+			if (d == 1)
+			{//ON
+				config.IsEnablePlaySE = true;
+				KC2HandsFreeMouse.SetEnablePlaySE(1);
+
+			}
+		}
+
+
+		private void DeviceComboBox_MouseWheel(object sender, MouseWheelEventArgs e)
+		{
+
+		}
+
+		private void DeviceComboBox_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+		{
+			var c = (ComboBox)sender;
+			if(!c.IsDropDownOpen){
+			e.Handled = true;
+			}
+		}
+
+
+		void ShowLoadOverLay()
+		{
+			mainPage.ShowLoadOverLay();
+		}
+		void CloseLoadOverLay()
+		{
+			mainPage.CloseLoadOverLay();
+		}
+
+
+		bool CheckHFM(){
+			if (KC2HandsFreeMouse.IsActive)
+			{
+				string messageBoxText = "ハンズフリーマウスの起動中にカメラ設定の変更はできません。";
+				string caption = "メッセージ";
+				MessageBoxButton button = MessageBoxButton.OK;
+				MessageBoxImage icon = MessageBoxImage.Warning;
+				MessageBoxResult result;
+
+				result = MessageBox.Show(messageBoxText, caption, button, icon, MessageBoxResult.Yes);
+				return true;
+			}
+			return false;
+		}
+
+	}
 }

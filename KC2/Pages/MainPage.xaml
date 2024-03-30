@@ -8,43 +8,75 @@
 
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
-      Title="MainPage" IsVisibleChanged="Page_IsVisibleChanged">
+      Title="MainPage" IsVisibleChanged="Page_IsVisibleChanged" Loaded="Page_Loaded">
 
 	<Grid>
-		<Grid.RowDefinitions>
-			<RowDefinition Height="2*" MinHeight="64"/>
-			<RowDefinition Height="3*"/>
-			<RowDefinition Height="Auto"/>
-		</Grid.RowDefinitions>
-		<Grid Grid.Row="0">
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition MinWidth="64"/>
-				<ColumnDefinition MinWidth="64"/>
-				<ColumnDefinition />
-			</Grid.ColumnDefinitions>
-			<Button x:Name="StartButton" Grid.Column="0" Content="Start" Click="StartButton_Click"/>
-			<Button x:Name="RangeButton" Grid.Column="1" Content="Range" Click="RangeButton_Click"/>
-			<Button x:Name="ConfigButton" Grid.Column="2" Content="Config" Click="ConfigButton_Click"/>
+		<Grid>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="2*" MinHeight="64"/>
+				<RowDefinition Height="3*"/>
+				<RowDefinition Height="Auto"/>
+			</Grid.RowDefinitions>
+			<Grid Grid.Row="0">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition MinWidth="64"/>
+					<ColumnDefinition MinWidth="64"/>
+					<ColumnDefinition />
+				</Grid.ColumnDefinitions>
+
+				<Grid>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="1*"/>
+						<RowDefinition Height="1*"/>
+					</Grid.RowDefinitions>
+					<FrameworkElement x:Name="b1"/>
+					<FrameworkElement x:Name="b2" Grid.Row="1"/>
+				</Grid>
+
+				<Button x:Name="StartButton" Grid.Column="0" Click="StartButton_Click">
+					<StackPanel>
+						<Label Content="開始" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
+						<Image Source="{StaticResource IPlay}" Height="{Binding ElementName=b2,Path=ActualHeight}"/>
+					</StackPanel>
+				</Button>
+				<Button x:Name="RangeButton" Grid.Column="1" Click="RangeButton_Click">
+
+					<StackPanel>
+						<Label Content="顔の可動域" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
+						<Image Source="{StaticResource IFaceRange}" Height="{Binding ElementName=b2,Path=ActualHeight}"/>
+					</StackPanel>
+				</Button>
+				<Button x:Name="ConfigButton" Grid.Column="2" Click="ConfigButton_Click">
+					<StackPanel>
+						<Label Content="設定" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
+						<Image Source="{StaticResource IGear}" Height="{Binding ElementName=b2,Path=ActualHeight}"/>
+					</StackPanel>
+				</Button>
+			</Grid>
+			<Grid Grid.Row="1">
+				<controls:CaptureDeviceView x:Name="CaptureView" Margin="0,0,0,0"/>
+			</Grid>
+			<Grid Grid.Row="2">
+				<StackPanel Orientation="Horizontal">
+					<Label Padding="1">
+						<TextBlock>
+							<TextBlock.Text>
+								<MultiBinding StringFormat="{}{0}x{1} CaptureFPS:{2} DisplayFPS:{3}">
+									<Binding ElementName="CaptureView" Path="CurrentFrame.Width"/>
+									<Binding ElementName="CaptureView" Path="CurrentFrame.Height"/>
+									<Binding ElementName="CaptureView" Path="CaptureFPS"/>
+									<Binding ElementName="CaptureView" Path="DisplayFPS"/>
+								</MultiBinding>
+								<!--Binding StringFormat="FPS : {0}" ElementName="CameraPreviewView" Path="FPSDevice"/-->
+							</TextBlock.Text>
+						</TextBlock>
+					</Label>
+				</StackPanel>
+			</Grid>
 		</Grid>
-		<Grid Grid.Row="1">
-			<controls:CaptureDeviceView x:Name="CaptureView" Margin="0,0,0,0"/>
-		</Grid>
-		<Grid Grid.Row="2">
-			<StackPanel Orientation="Horizontal">
-				<Label Padding="1">
-					<TextBlock>
-						<TextBlock.Text>
-							<MultiBinding StringFormat="{}{0}x{1} CaptureFPS:{2} DisplayFPS:{3}">
-								<Binding ElementName="CaptureView" Path="CurrentFrame.Width"/>
-								<Binding ElementName="CaptureView" Path="CurrentFrame.Height"/>
-								<Binding ElementName="CaptureView" Path="CaptureFPS"/>
-								<Binding ElementName="CaptureView" Path="DisplayFPS"/>
-							</MultiBinding>
-							<!--Binding StringFormat="FPS : {0}" ElementName="CameraPreviewView" Path="FPSDevice"/-->
-						</TextBlock.Text>
-					</TextBlock>
-				</Label>
-			</StackPanel>
+
+		<Grid x:Name="OverLay" Visibility="Hidden">
+			<Rectangle Fill="Black" Opacity=".5"/>
 		</Grid>
 	</Grid>
 </Page>

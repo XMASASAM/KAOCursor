@@ -1,4 +1,5 @@
 ﻿using KC2.DataStructs;
+using KC2.Pages;
 using KC2NativeWrapper;
 using System;
 using System.Collections.Generic;
@@ -34,6 +35,7 @@ namespace KC2.Dialogs
 		static DispatcherTimer timer_window_min = new DispatcherTimer();
 		bool flg_cursor_inside = false;
 		ClickEventTag? current_tag;
+		int tag_selected_index=-1;
 		//		KC2_MouseEvent current_mouse_event;
 		SaveData config;
 		double ListWidth = 0;
@@ -46,7 +48,8 @@ namespace KC2.Dialogs
 		bool IsWindowMove = false;
 		Vec2d WindowOffset = new Vec2d();
 		static MediaPlayer ClickSound;
-//		static MediaPlayer ClickSound;
+		//		static MediaPlayer ClickSound;
+		MainPage mainPage;
 
 		static MouseClickController()
 		{
@@ -54,10 +57,11 @@ namespace KC2.Dialogs
 //			ClickSound.Open(new Uri("PC-Mouse03-06(R).wav"));
 		}
 
-		public MouseClickController()
+		public MouseClickController(MainPage main)
 		{
 
 			InitializeComponent();
+			this.mainPage = main;
 			this.DataContext = this;
 			//	Visibility = Visibility.Hidden;
 
@@ -95,7 +99,11 @@ namespace KC2.Dialogs
 
 		void Update(object? sender, EventArgs e)
 		{
-			if(IsWindowMove){
+			Topmost = false;
+			stayProgressBar.Topmost = false;
+			Topmost = true;
+			stayProgressBar.Topmost = true;
+			if (IsWindowMove){
 				Win32Mouse.GetCursorPos(out var pos);
 				Left = pos.X - WindowOffset.X;
 				Top = pos.Y - WindowOffset.Y;
@@ -106,6 +114,12 @@ namespace KC2.Dialogs
 			}else{
 				IsActualInsideMoveBorder = false;
 				Mouse.OverrideCursor = null;
+			}
+
+			bool is_rampaging = KC2HandsFreeMouse.DetectRampaging();
+			if (is_rampaging){
+				mainPage.SetActiveWindow();
+				mainPage.StopHansFreeMouse();
 			}
 
 		}
@@ -209,14 +223,11 @@ namespace KC2.Dialogs
 				//KC2HandsFreeMouse.SetEnableClick(false);
 				if (config.IsEnableClick)
 				{
-					KC2HandsFreeMouse.SetClickAllowed(0);
+					KC2HandsFreeMouse.SetEnableClick(false);//.SetClickAllowed(0);
 				}
 				flg_cursor_inside =true;
 
-				Topmost = false;
-				Topmost = true;
-				stayProgressBar.Topmost = false;
-				stayProgressBar.Topmost = true;
+
 				timer_window_min.Stop();
 				Console.WriteLine("Enter_Window");
 
@@ -260,7 +271,7 @@ namespace KC2.Dialogs
 			if (sender is Window)
 			{
 				if (config.IsEnableClick){
-					KC2HandsFreeMouse.SetClickAllowed(1);
+					KC2HandsFreeMouse.SetEnableClick(true);//SetClickAllowed(1);
 				}
 				flg_cursor_inside = false;
 				Topmost = true;
@@ -293,8 +304,7 @@ namespace KC2.Dialogs
 		}
 
 		public void CallClickCursorEvent(){
-		//	ClickSound.Play();
-
+			//	ClickSound.Play();
 			if (IsInsideMoveBorder || IsActualInsideMoveBorder){
 				Win32Mouse.GetCursorPos(out var pos);
 				if (IsActualInsideMoveBorder){
@@ -305,9 +315,11 @@ namespace KC2.Dialogs
 					//上にほかのウィンドウがある場合通る
 					if (config.IsEnableClick)
 					{
-						KC2HandsFreeMouse.SetClickAllowed(1);
+						KC2HandsFreeMouse.SetEnableClick(true);//.SetClickAllowed(1);
 					}
 					IsInsideMoveBorder = false;
+					flg_cursor_inside = false;
+
 					Window_MouseLeave(this,null);
 					current_tag = null;
 				}
@@ -318,10 +330,17 @@ namespace KC2.Dialogs
 				IsWindowMove=false;
 			}
 
-			if (current_tag == null) return;
+			
 
-			int index = Tags.IndexOf(current_tag);
-			TagListView.SelectedIndex = index;
+
+			if (flg_cursor_inside){
+				KC2HandsFreeMouse.PlaySE();
+				if (current_tag == null) return;
+
+				int index = Tags.IndexOf(current_tag);
+				
+				TagListView.SelectedIndex = index;
+			}
 		}
 
 		//マウスコントローラーを移動させるイベント.
@@ -339,7 +358,23 @@ namespace KC2.Dialogs
 		private void TagListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			var tag = (ClickEventTag)TagListView.SelectedItem;
-			KC2HandsFreeMouse.SetMouseClickEvent(tag.MouseEvent);
+			bool ok = true;
+			if(tag.MouseEvent.Equals(KC2_MouseEvent.KC2_MouseEvent_Stop)){
+				mainPage.StopHansFreeMouse();
+				TagListView.SelectedIndex = tag_selected_index;
+				ok = false;
+			}
+
+			if(tag.MouseEvent.Equals(KC2_MouseEvent.KC2_MouseEvent_ShowMenu)){
+				mainPage.SetActiveWindow();
+				TagListView.SelectedIndex = tag_selected_index;
+				ok = false;
+			}
+
+			if(ok){
+				tag_selected_index = TagListView.SelectedIndex;
+				KC2HandsFreeMouse.SetMouseClickEvent(tag.MouseEvent);
+			}
 		}
 
 		StackPanel stp;
