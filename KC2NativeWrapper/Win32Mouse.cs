@@ -36,10 +36,10 @@ namespace KC2NativeWrapper
 		[StructLayout(LayoutKind.Sequential)]
 		public struct Win32RECT
 		{
-			public int left;
-			public int top;
-			public int right;
-			public int bottom;
+			public int left { get; set; }
+			public int top { get; set; }
+			public int right { get; set; }
+			public int bottom { get; set; }
 		}
 
 		[StructLayout(LayoutKind.Sequential)]

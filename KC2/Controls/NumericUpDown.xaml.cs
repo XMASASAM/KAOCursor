@@ -43,6 +43,14 @@ namespace KC2.Controls
 			set { SetValue(ButtonWidthProperty, value); }
 		}
 
+		public static readonly DependencyProperty UnitTextProperty =
+	DependencyProperty.Register(nameof(UnitText), typeof(string), typeof(NumericUpDown), new PropertyMetadata(""));
+		public string UnitText
+		{
+			get { return (string)GetValue(UnitTextProperty); }
+			set { SetValue(UnitTextProperty, value); }
+		}
+
 		public int CurrentValue { get; private set; }
 
 		int _DecimalPlace = 1;
@@ -58,10 +66,26 @@ namespace KC2.Controls
 			SetValueToText(value);
 		}
 
-		public void SetDecimalPlace(int place)
+		public void SetCurrentValue(double value,int decimal_place){
+			int v = (int)(value * Math.Pow(10, decimal_place));
+			SetCurrentValue(v);
+		}
+
+
+		public void SetDecimalPlace(int decimal_place)
 		{
-			DecimalPlace = place;
-			DecimalDen = (int)Math.Round(Math.Pow(10.0f, (double)place));
+			DecimalPlace = decimal_place;
+			DecimalDen = (int)Math.Round(Math.Pow(10.0f, (double)decimal_place));
+		}
+
+		public double GetCurrentValue(int decimal_place)
+		{
+			return CurrentValue * Math.Pow(10, -decimal_place);
+		}
+
+		public int GetCurrentValueInt(int decimal_place)
+		{
+			return (int)(CurrentValue * Math.Pow(10, -decimal_place));
 		}
 
 
@@ -119,8 +143,9 @@ namespace KC2.Controls
 
 		void SetValueToText(int value)
 		{
+			value = Math.Clamp(value, MinValue, MaxValue);
 			var s = value.ToString();
-
+			CurrentValue = value;
 			if (1 <= DecimalPlace)
 			{
 				int d = DecimalPlace + 1 - Math.Min(s.Length, DecimalPlace + 1);

@@ -7,6 +7,7 @@
 	<BitmapImage x:Key="IPC_RT" UriSource="PC_RT.png"/>
 	<BitmapImage x:Key="IPC_RB" UriSource="PC_RB.png"/>
 	<BitmapImage x:Key="IPC_LB" UriSource="PC_LB.png"/>
+	<BitmapImage x:Key="IM" UriSource="Mouse.png"/>
 	<BitmapImage x:Key="IM_LC" UriSource="LeftClickMouse.png"/>
 	<BitmapImage x:Key="IM_LD" UriSource="LeftDoubleClickMouse.png"/>
 	<BitmapImage x:Key="IM_LG" UriSource="LeftDragMouse.png"/>
@@ -18,5 +19,8 @@
 	<BitmapImage x:Key="IM_MG" UriSource="MiddleDragMouse.png"/>
 	<BitmapImage x:Key="IM_WU" UriSource="WheelUpMouse.png"/>
 	<BitmapImage x:Key="IM_WD" UriSource="WheelDownMouse.png"/>
+	<BitmapImage x:Key="IFaceRange" UriSource="FaceRangeIcon.png"/>
+	<BitmapImage x:Key="IGear" UriSource="GearIcon.png"/>
+	<BitmapImage x:Key="IPlay" UriSource="PlayIcon.png"/>
 
 </ResourceDictionary>

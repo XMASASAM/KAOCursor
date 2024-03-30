@@ -30,6 +30,8 @@ namespace KC2NativeWrapper
 		static extern void kc2np_F4MVideoCapture_change_flip(IntPtr vc, int angle, int hflip);
 
 		internal IntPtr cap = 0;
+		CaptureProperty prop;
+		int index = -1;
 		public bool IsOpened
 		{
 			get { return cap != IntPtr.Zero; }
@@ -38,7 +40,10 @@ namespace KC2NativeWrapper
 		{
 			if (capture_index == -1) return;
 			cap = kc2np_get_F4MVideoCapture(capture_index, prop);
+			
 			if (cap == IntPtr.Zero) return;
+			this.prop = prop;
+			index = capture_index;
 		}
 
 		public FrameInfo GetCurrentFrameInfo()
@@ -63,6 +68,13 @@ namespace KC2NativeWrapper
 		public void ChangeFlip(int angle, int hflip)
 		{
 			kc2np_F4MVideoCapture_change_flip(cap, angle, hflip);
+		}
+
+
+		public string GetID()
+		{
+			var di = KC2DeviceInformation.DeviceList[index];
+			return $"{di.Name + di.Path}{prop.Width}{prop.Height}{prop.Angle}";
 		}
 
 	}

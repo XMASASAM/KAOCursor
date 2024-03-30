@@ -7,7 +7,22 @@
 		xmlns:controls="clr-namespace:KC2.Controls"
 		mc:Ignorable="d"
 		Title="MainWindow" Height="450" Width="800" MinWidth="128" MinHeight="128" Closed="Window_Closed">
-	
-	<Frame x:Name="MainFrame" NavigationUIVisibility="Hidden"/>
+
+	<Grid>
+		<Frame x:Name="MainFrame" NavigationUIVisibility="Hidden"/>
+
+		<Grid x:Name="OverLayRectangle" Visibility="Hidden">
+			<Rectangle Fill="Black" Opacity=".5"/>
+			<Grid>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="1*"/>
+					<ColumnDefinition Width="3*"/>
+					<ColumnDefinition Width="1*"/>
+				</Grid.ColumnDefinitions>
+				<ProgressBar Grid.Column="1" IsIndeterminate="True" Height="32"/>
+			</Grid>
+
+		</Grid>
+	</Grid>
 	
 </Window>

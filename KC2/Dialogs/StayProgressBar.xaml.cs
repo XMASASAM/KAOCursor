@@ -35,6 +35,11 @@ namespace KC2.Dialogs
 			timer.Interval = new TimeSpan(0, 0, 0, 0, 1);
 			timer.Tick += new EventHandler(Update);
 			timer.Start();
+
+			var config = ((App)Application.Current).SaveData;
+			if(!config.IsEnableShowCircleProgressBar){
+				Visibility = Visibility.Hidden;
+			}
 		}
 		void Update(object? sender, EventArgs e)
 		{

@@ -21,7 +21,30 @@ namespace kc2 {
 
     }
     int MeasureFPS::get_fps() {
+        
         return ans;
+    }
+
+
+    void CountPS::count(double v) {
+        if (time.elapsed() >= 1000) {
+            ans = sum / samples;
+            samples=0;
+            sum = 0;
+            time.start();
+        }
+        sum+=v;
+        samples++;
+    }
+
+    double CountPS::get_countps() {
+        return ans;
+    }
+
+    void CountPS::clear() {
+        sum=0;
+        ans=0;
+        samples=0;
     }
 
 }

@@ -14,6 +14,7 @@ namespace KC2.DataStructs
 		public string Name { get; set; }
 		public KC2_MouseEvent MouseEvent { get; set; }
 		public BitmapImage Icon { get; set; }
+
 		public ClickEventTag(string name,KC2_MouseEvent mouse_event,BitmapImage icon){
 			Name = name;
 			MouseEvent = mouse_event;
@@ -34,6 +35,9 @@ namespace KC2.DataStructs
 			AllTags.Add(new ClickEventTag("MiddleDrag", KC2_MouseEvent.KC2_MouseEvent_MiddleDrag, (BitmapImage)m["IM_MG"]));
 			AllTags.Add(new ClickEventTag("WheelUp", KC2_MouseEvent.KC2_MouseEvent_WheelUp, (BitmapImage)m["IM_WU"]));
 			AllTags.Add(new ClickEventTag("WheelDown", KC2_MouseEvent.KC2_MouseEvent_WheelDown, (BitmapImage)m["IM_WD"]));
+			AllTags.Add(new ClickEventTag("Stop", KC2_MouseEvent.KC2_MouseEvent_Stop, (BitmapImage)m["IM"]));
+			AllTags.Add(new ClickEventTag("Menu", KC2_MouseEvent.KC2_MouseEvent_ShowMenu, (BitmapImage)m["IPC"]));
+			
 		}
 
 

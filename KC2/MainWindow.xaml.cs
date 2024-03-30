@@ -23,6 +23,7 @@ namespace KC2
         {
             InitializeComponent();
             mainPage = new Pages.MainPage();
+            mainPage.SetMainWindow(this);
             MainFrame.Navigate(mainPage);
             //KC2DeviceInformation.Init();
             //var 
@@ -34,6 +35,16 @@ namespace KC2
             mainPage.Close();
             CaptureDevice.ReleaseCapture();
 
+		}
+
+
+		public void ShowLoadOverLay()
+		{
+			OverLayRectangle.Visibility = Visibility.Visible;
+		}
+		public void CloseLoadOverLay()
+		{
+			OverLayRectangle.Visibility = Visibility.Hidden;
 		}
 	}
 }

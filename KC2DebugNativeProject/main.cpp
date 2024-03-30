@@ -5,8 +5,11 @@ extern "C"{
 	void test_dev2();
 	void test_track();
 	void test_hfm();
+	int test_sound();
+	int test_sound2();
+	int test_sound10();
 }
 
 int main(void) {
-	test_hfm();
+	test_sound10();
 }

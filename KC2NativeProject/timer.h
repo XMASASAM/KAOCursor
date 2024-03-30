@@ -13,10 +13,22 @@ namespace kc2 {
     class MeasureFPS {
     private:
         timer time;
-        int sum;
-        int ans;
+        int sum=0;
+        int ans=0;
     public:
         void count();
         int get_fps();
+    };
+
+    class CountPS {
+    private:
+        timer time;
+        double sum=0;
+        double ans=0;
+        int samples=0;
+    public:
+        void count(double v);
+        double get_countps();
+        void clear();
     };
 }

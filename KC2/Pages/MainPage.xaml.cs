@@ -17,6 +17,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
+
 
 namespace KC2.Pages
 {
@@ -26,10 +28,16 @@ namespace KC2.Pages
 	public partial class MainPage : Page
 	{
 		Dialogs.MouseClickController? MouseClickControllerDialog;
+		MainWindow MainWindow;
 		public MainPage()
 		{
 			InitializeComponent();
 			//CaptureView.StartCapture(0);
+
+
+		}
+		public void SetMainWindow(MainWindow main){
+			MainWindow = main;
 			App ss = (App)App.Current;
 			SaveData data = ss.SaveData;
 			if (!string.IsNullOrEmpty(data.DeviceName))
@@ -40,13 +48,26 @@ namespace KC2.Pages
 					CaptureProperty prop = data.CaptureProperty;
 					prop.FlagFpsOption = 1;
 					//ChangeCaptureView(index,prop);
-					CaptureDevice.Open(index, prop);
+					ShowLoadOverLay();
+					DispatcherTimer t = new DispatcherTimer();
+					t.Tick += (s, e) => { CloseLoadOverLay(); t.Stop(); };
+					t.Interval = new TimeSpan(0);
+					Thread open_thread = new Thread(new ThreadStart(() =>
+					{
+						CaptureDevice.Open(index, prop);
+
+						t.Start();
+					}));
+					open_thread.Start();
 				}
 
 			}
-
 		}
 
+		private void Page_Loaded(object sender, RoutedEventArgs e)
+		{
+
+		}
 
 
 		private void ConfigButton_Click(object sender, RoutedEventArgs e)
@@ -89,25 +110,50 @@ namespace KC2.Pages
 			if (KC2HandsFreeMouse.IsActive)
 			{
 				//VideoCaptureDevice.ReleaseHandsFreeMouse();
-				CaptureDevice.ReleaseHandsFreeMouse();
-				if (MouseClickControllerDialog != null)
-				{
-					MouseClickControllerDialog.Close();
-					MouseClickControllerDialog = null;
-				}
-				StartButton.Content = "Start";
-			}
-			else
-			{
-				CaptureDevice.StartHandsFreeMouse();
-				if(KC2HandsFreeMouse.IsActive){
-					StartButton.Content = "Stop";
+				StopHansFreeMouse();
 
-					KC2HandsFreeMouse.SetEnableClick(config.IsEnableClick);
-					if (config.IsEnableClick)
+			}
+			else 
+			{
+				if (CaptureDevice.IsOpened)
+				{
+
+
+					if (CaptureDevice.GetID().Equals(config.FaceRangeDeviceID))
 					{
-						ShowMouseClickController();
+
+
+						CaptureDevice.StartHandsFreeMouse();
+						if (KC2HandsFreeMouse.IsActive)
+						{
+							StartButton.Content = "Stop";
+
+							KC2HandsFreeMouse.SetEnableClick(config.IsEnableClick);
+							if (config.IsEnableClick)
+							{
+								ShowMouseClickController();
+							}
+						}
 					}
+					else
+					{
+						string messageBoxText = "可動域を設定して下さい。";
+						string caption = "メッセージ";
+						MessageBoxButton button = MessageBoxButton.OK;
+						MessageBoxImage icon = MessageBoxImage.Warning;
+						MessageBoxResult result;
+
+						result = MessageBox.Show(messageBoxText, caption, button, icon, MessageBoxResult.Yes);
+						Console.WriteLine("wlwlwlwl");
+					}
+				}else{
+					string messageBoxText = "カメラを設定して下さい。";
+					string caption = "メッセージ";
+					MessageBoxButton button = MessageBoxButton.OK;
+					MessageBoxImage icon = MessageBoxImage.Warning;
+					MessageBoxResult result;
+
+					result = MessageBox.Show(messageBoxText, caption, button, icon, MessageBoxResult.Yes);
 				}
 				//if (VideoCaptureDevice.StartHandsFreeMouse(CaptureView.GetVideoCaptureDevice(),0) == 1)
 				//{
@@ -118,7 +164,19 @@ namespace KC2.Pages
 
 		private void RangeButton_Click(object sender, RoutedEventArgs e)
 		{
-			NavigationService.Navigate(new Pages.RangePage(this));
+			if (CaptureDevice.IsOpened)
+			{
+				NavigationService.Navigate(new Pages.RangePage(this));
+
+			}else{
+				string messageBoxText = "カメラを設定して下さい。";
+				string caption = "メッセージ";
+				MessageBoxButton button = MessageBoxButton.OK;
+				MessageBoxImage icon = MessageBoxImage.Warning;
+				MessageBoxResult result;
+
+				result = MessageBox.Show(messageBoxText, caption, button, icon, MessageBoxResult.Yes);
+			}
 		}
 
 		public void Close(){
@@ -128,7 +186,7 @@ namespace KC2.Pages
 		public void ShowMouseClickController(){
 			if (MouseClickControllerDialog == null && KC2HandsFreeMouse.IsActive)
 			{
-				MouseClickControllerDialog = new Dialogs.MouseClickController();
+				MouseClickControllerDialog = new Dialogs.MouseClickController(this);
 				MouseClickControllerDialog.Show();
 			}
 		}
@@ -142,6 +200,36 @@ namespace KC2.Pages
 			}
 
 		}
+
+		public void StopHansFreeMouse(){
+			CaptureDevice.ReleaseHandsFreeMouse();
+			if (MouseClickControllerDialog != null)
+			{
+				MouseClickControllerDialog.Close();
+				MouseClickControllerDialog = null;
+			}
+			StartButton.Content = "Start";
+		}
+
+		public void SetActiveWindow(){
+			MainWindow.Topmost = true;
+			MainWindow.Topmost = false;
+			if(!MainWindow.WindowState.Equals(WindowState.Maximized)){
+				MainWindow.WindowState = WindowState.Normal;
+
+			}
+		}
+
+
+		public void ShowLoadOverLay()
+		{
+			MainWindow.ShowLoadOverLay();
+		}
+		public void CloseLoadOverLay()
+		{
+			 MainWindow.CloseLoadOverLay();
+		}
+
 
 	}
 }

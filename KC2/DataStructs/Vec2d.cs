@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KC2.DataStructs
 {
-    class Rect2I
+    public class Rect2I
     {
         public Vec2I Point;
         public Vec2I Size;

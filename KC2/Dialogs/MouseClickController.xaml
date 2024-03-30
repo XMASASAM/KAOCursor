@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:KC2.Dialogs"
         xmlns:cont="clr-namespace:KC2.Controls"
         mc:Ignorable="d"
-        Title="MouseClickController" Height="200"  Width="1200" Closed="Window_Closed" Topmost="True" Loaded="Window_Loaded" MouseEnter="Window_MouseEnter" MouseLeave="Window_MouseLeave" WindowStyle="None">
+        Title="MouseClickController" Height="200"  Width="64" Closed="Window_Closed" Topmost="True" Loaded="Window_Loaded" MouseEnter="Window_MouseEnter" MouseLeave="Window_MouseLeave" WindowStyle="None" LostFocus="Window_LostFocus" Activated="Window_Activated">
 	<Grid Margin="0">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="64"/>

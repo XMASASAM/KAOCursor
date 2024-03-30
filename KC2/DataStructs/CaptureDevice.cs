@@ -123,5 +123,10 @@ namespace KC2.DataStructs
 			return KC2HandsFreeMouse.IsActive;
 		}
 
+		public static string GetID(){
+			return cap.GetID();
+		}
+
+
 	}
 }
