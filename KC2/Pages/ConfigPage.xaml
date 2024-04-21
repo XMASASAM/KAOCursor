@@ -119,6 +119,13 @@
 
 				</TabItem>
 				<TabItem Header="追跡アルゴリズム">
+					<StackPanel>
+						<Label Content="赤外線モード"/>
+						<ComboBox x:Name="InfraredTrackerComboBox" SelectedIndex="0" SelectionChanged="InfraredTrackerComboBox_SelectionChanged">
+							<ComboBoxItem>無効</ComboBoxItem>
+							<ComboBoxItem>有効</ComboBoxItem>
+						</ComboBox>
+					</StackPanel>
 				</TabItem>
 				<TabItem Header="カーソル">
 					<StackPanel>
@@ -146,8 +153,8 @@
 								<controls:NumericUpDown x:Name="CursorMoveYFactorView" MaxValue="99999" MinValue="1" DecimalPlace="1" UnitText="倍"/>
 							</StackPanel>
 						</Grid>
-						<Label Content="移動閾値"/>
-						<controls:NumericUpDown x:Name="CursorMovePixelThresholdView"  MaxValue="99999" MinValue="1" DecimalPlace="1" UnitText="pixel"/>
+						<Label Content="移動閾値" Height="0"/>
+						<controls:NumericUpDown Height="0" x:Name="CursorMovePixelThresholdView"  MaxValue="99999" MinValue="1" DecimalPlace="1" UnitText="pixel"/>
 
 						<Label Content="ブレ吸収率"/>
 						<controls:NumericUpDown x:Name="LowPathRateView" MaxValue="99" MinValue="1" DecimalPlace="0" UnitText="%"/>
@@ -192,9 +199,9 @@
 
 				<TabItem Header="可動域">
 					<StackPanel>
-					<Label Content="ブレ許容範囲"/>
+					<Label Content="可動域設定時のブレ許容範囲"/>
 						<controls:NumericUpDown x:Name="DetectStayPixelThresholdPow2View" MaxValue="10" MinValue="1" DecimalPlace="0" UnitText="pixel"/>
-					<Label Content="ポイント決定間隔"/>
+						<Label Content="可動域設定時のポイント決定間隔"/>
 						<controls:NumericUpDown x:Name="DetectStayMillisecondTimeThresholdView" MaxValue="1000" MinValue="1" DecimalPlace="0" UnitText="ミリ秒"/>
 					</StackPanel>
 

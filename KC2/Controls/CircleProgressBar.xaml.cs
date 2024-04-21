@@ -99,6 +99,8 @@ DependencyProperty.Register(nameof(CColor), typeof(SolidColorBrush), typeof(Circ
 			get; set;
 		}
 
+		public double current_par=-1;
+
 		public CircleProgressBar()
 		{
 
@@ -145,9 +147,11 @@ DependencyProperty.Register(nameof(CColor), typeof(SolidColorBrush), typeof(Circ
 
 
 		}
-
+		
 		public void SetProgress(double par){
+			if (current_par == par) return;
 			SetDegree(359.99 * par);
+			current_par = par;
 		}
 
 	}

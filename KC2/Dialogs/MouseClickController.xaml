@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:KC2.Dialogs"
         xmlns:cont="clr-namespace:KC2.Controls"
         mc:Ignorable="d"
-        Title="MouseClickController" Height="200"  Width="64" Closed="Window_Closed" Topmost="True" Loaded="Window_Loaded" MouseEnter="Window_MouseEnter" MouseLeave="Window_MouseLeave" WindowStyle="None" LostFocus="Window_LostFocus" Activated="Window_Activated">
+        Title="MouseClickController" Height="200"  Width="64" Closed="Window_Closed" Topmost="True" Loaded="Window_Loaded" MouseEnter="Window_MouseEnter" MouseLeave="Window_MouseLeave" WindowStyle="None" LostFocus="Window_LostFocus" Activated="Window_Activated" Icon="/Images/AppIcon.ico">
 	<Grid Margin="0">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="64"/>
@@ -24,28 +24,57 @@
 			</ListView.ItemsPanel>
 			<ListView.ItemTemplate>
 				<DataTemplate>
-					<Grid Width="64">
+					<Grid x:Name="B" Width="64" Background="Transparent">
 						<Grid.RowDefinitions>
 							<RowDefinition Height="Auto"/>
 							<RowDefinition Height="Auto"/>
 						</Grid.RowDefinitions>
-						<Label x:Name="a" Grid.Row="0" Content="{Binding Name}" HorizontalAlignment="Center"/>
-						<Image Grid.Row="1" Source="{Binding Icon}" Height="64" HorizontalAlignment="Center"/>
+						<Label x:Name="CN" Grid.Row="0" Content="{Binding Name}" HorizontalAlignment="Center"/>
+						<Image x:Name="CI" Grid.Row="1" Source="{Binding Icon}" Height="64" HorizontalAlignment="Center"/>
 					</Grid>
-
 				</DataTemplate>
 			</ListView.ItemTemplate>
 			<ListView.ItemContainerStyle>
 				<Style TargetType="ListViewItem">
 					<Setter Property="Margin" Value="0"/>
 					<Setter Property="Padding" Value="0"/>
-					<Setter Property="BorderThickness" Value="0"/>
+					<Setter Property="BorderThickness" Value="1"/>
 					<Setter Property="Height" Value="{Binding RelativeSource={RelativeSource AncestorType=ListView},Path=ActualHeight}"/>
 					<Setter Property="BorderBrush" Value="Red"/>
 					<EventSetter Event="MouseEnter" Handler="Window_MouseEnter"/>
 					<EventSetter Event="MouseLeave" Handler="Window_MouseLeave"/>
 					<EventSetter Event="Loaded" Handler="ListBoxItem_Loaded"/>
 
+					<Setter Property="Template">
+						<Setter.Value>
+							<ControlTemplate TargetType="ListBoxItem">
+								<Border x:Name="BB" Background="White">
+									<ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center"/>
+								</Border>
+								<ControlTemplate.Triggers>
+									<Trigger Property="IsSelected" Value="True">
+										<Setter TargetName="BB" Property="Background" Value="LightGray"/>
+									</Trigger>
+									<Trigger Property="IsMouseOver" Value="True">
+										<Setter TargetName="BB" Property="Background" Value="SkyBlue"/>
+
+									</Trigger>
+
+								</ControlTemplate.Triggers>
+							</ControlTemplate>
+							
+						</Setter.Value>
+					</Setter>
+
+					<Style.Triggers>
+						<Trigger Property="IsMouseOver" Value="True">
+							<Setter Property="Background" Value="SkyBlue"/>
+						</Trigger>
+						<Trigger Property="IsSelected" Value="True">
+							<Setter Property="Background" Value="DeepSkyBlue"/>
+							<Setter Property="Foreground" Value="White"/>
+						</Trigger>
+					</Style.Triggers>
 				</Style>
 			</ListView.ItemContainerStyle>
 		</ListView>

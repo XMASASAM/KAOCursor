@@ -7,9 +7,10 @@
         xmlns:cont="clr-namespace:KC2.Controls"
 
         mc:Ignorable="d"
-        Title="StayProgressBar" Height="450" Width="800" ClipToBounds="False" IsHitTestVisible="False" WindowStyle="None" Background="Transparent" AllowsTransparency="true" Topmost="True">
+        Title="ProgressBar" Height="450" Width="800" ClipToBounds="False" IsHitTestVisible="False" WindowStyle="None" Background="Transparent" AllowsTransparency="true" Topmost="True" Icon="/Images/AppIcon.ico">
 
 	<Grid Opacity=".7">
 		<cont:CircleProgressBar x:Name="bar"/>
+		<cont:CircleProgressBar x:Name="bar2" CColor="Aquamarine"/>
 	</Grid>
 </Window>

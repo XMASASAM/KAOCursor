@@ -20,7 +20,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KC2DebugNativeProject", "KC
 		{99F27E67-D65E-4471-897B-6F6E3A1C42C5} = {99F27E67-D65E-4471-897B-6F6E3A1C42C5}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThreadTest", "ThreadTest\ThreadTest.csproj", "{8FA930C0-43FB-4F59-A06F-1BC2195F17E3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ThreadTest", "ThreadTest\ThreadTest.csproj", "{8FA930C0-43FB-4F59-A06F-1BC2195F17E3}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "KC2SetUp", "KC2SetUp\KC2SetUp.vdproj", "{1611F0A0-37F3-45B6-94A2-C51025C64CC4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -92,6 +94,12 @@ Global
 		{8FA930C0-43FB-4F59-A06F-1BC2195F17E3}.Release|x64.Build.0 = Release|Any CPU
 		{8FA930C0-43FB-4F59-A06F-1BC2195F17E3}.Release|x86.ActiveCfg = Release|Any CPU
 		{8FA930C0-43FB-4F59-A06F-1BC2195F17E3}.Release|x86.Build.0 = Release|Any CPU
+		{1611F0A0-37F3-45B6-94A2-C51025C64CC4}.Debug|Any CPU.ActiveCfg = Debug
+		{1611F0A0-37F3-45B6-94A2-C51025C64CC4}.Debug|x64.ActiveCfg = Debug
+		{1611F0A0-37F3-45B6-94A2-C51025C64CC4}.Debug|x86.ActiveCfg = Debug
+		{1611F0A0-37F3-45B6-94A2-C51025C64CC4}.Release|Any CPU.ActiveCfg = Release
+		{1611F0A0-37F3-45B6-94A2-C51025C64CC4}.Release|x64.ActiveCfg = Release
+		{1611F0A0-37F3-45B6-94A2-C51025C64CC4}.Release|x86.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

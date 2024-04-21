@@ -72,7 +72,7 @@ namespace KC2.Pages
 		{
 
 			//LicenseTab.Margin = new Thickness(tabItemWidth.ActualWidth,0,0,0);
-			
+
 			//			ResolutionComboBox.SelectedIndex = ResolutionList.Find()
 			ApplyResolution();
 
@@ -85,13 +85,14 @@ namespace KC2.Pages
 			CursorMoveMultiplierView.SetCurrentValue(hp.CursorMoveMultiplier, 1);
 			CursorMoveXFactorView.SetCurrentValue(hp.CursorMoveXFactor, 1);
 			CursorMoveYFactorView.SetCurrentValue(hp.CursorMoveYFactor, 1);
-			DetectCursorStayMillisecondTimeThresholdView.SetCurrentValue(hp.DetectCursorStayMillisecondTimeThreshold,0);
+			DetectCursorStayMillisecondTimeThresholdView.SetCurrentValue(hp.DetectCursorStayMillisecondTimeThreshold, 0);
 			MouseClickHoldMillisecondTimeView.SetCurrentValue(hp.MouseClickHoldMillisecondTime, 0);
 			MouseDoubleClickUnPressMillisecondTimeView.SetCurrentValue(hp.MouseDoubleClickUnPressMillisecondTime, 0);
 			MouseWheelScrollAmountView.SetCurrentValue(hp.MouseWheelScrollAmount, 0);
 			MouseWheelScrollIntervalMillisecondTimeView.SetCurrentValue(hp.MouseWheelScrollIntervalMillisecondTime, 0);
-			DetectStayPixelThresholdPow2View.SetCurrentValue((int)Math.Round( Math.Sqrt(hp.DetectStayPixelThresholdPow2)), 0);
+			DetectStayPixelThresholdPow2View.SetCurrentValue((int)Math.Round(Math.Sqrt(hp.DetectStayPixelThresholdPow2)), 0);
 			DetectStayMillisecondTimeThresholdView.SetCurrentValue(hp.DetectStayMillisecondTimeThreshold, 0);
+			InfraredTrackerComboBox.SelectedIndex = config.IsEnableInfraredTracker ? 1 : 0;
 		}
 
 		void LoadHansFreeMousePropertyFromUI(){
@@ -109,6 +110,8 @@ namespace KC2.Pages
 			hp.DetectStayPixelThresholdPow2 =(int)Math.Round( Math.Pow( DetectStayPixelThresholdPow2View.GetCurrentValueInt(0),2));
 			hp.DetectStayMillisecondTimeThreshold = DetectStayMillisecondTimeThresholdView.GetCurrentValueInt(0);
 			config.HansFreeMouseProperty = hp;
+
+			config.IsEnableInfraredTracker = InfraredTrackerComboBox.SelectedIndex==1;
 		}
 
 
@@ -430,5 +433,9 @@ namespace KC2.Pages
 			return false;
 		}
 
+		private void InfraredTrackerComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+
+		}
 	}
 }

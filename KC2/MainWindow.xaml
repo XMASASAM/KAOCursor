@@ -6,7 +6,7 @@
 		xmlns:local="clr-namespace:KC2"
 		xmlns:controls="clr-namespace:KC2.Controls"
 		mc:Ignorable="d"
-		Title="MainWindow" Height="450" Width="800" MinWidth="128" MinHeight="128" Closed="Window_Closed">
+		Title="KAOCursor" Height="450" Width="800" MinWidth="128" MinHeight="128" Closed="Window_Closed" Icon="/Images/AppIcon.ico">
 
 	<Grid>
 		<Frame x:Name="MainFrame" NavigationUIVisibility="Hidden"/>

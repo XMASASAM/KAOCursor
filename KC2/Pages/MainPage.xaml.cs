@@ -66,7 +66,18 @@ namespace KC2.Pages
 
 		private void Page_Loaded(object sender, RoutedEventArgs e)
 		{
-
+			App app = (App)App.Current;
+			if (app.SaveData.NeedTutorial)
+			{
+				NavigationService.Navigate(new Pages.SelectCameraPage(this));
+				e.Handled = true;
+			}else{
+				if(StartButton.Visibility == Visibility.Visible){
+					if(KC2HandsFreeMouse.IsActive){
+						StartHansFreeMouse();
+					}
+				}
+			}
 		}
 
 
@@ -110,55 +121,13 @@ namespace KC2.Pages
 			if (KC2HandsFreeMouse.IsActive)
 			{
 				//VideoCaptureDevice.ReleaseHandsFreeMouse();
+
 				StopHansFreeMouse();
 
 			}
 			else 
 			{
-				if (CaptureDevice.IsOpened)
-				{
-
-
-					if (CaptureDevice.GetID().Equals(config.FaceRangeDeviceID))
-					{
-
-
-						CaptureDevice.StartHandsFreeMouse();
-						if (KC2HandsFreeMouse.IsActive)
-						{
-							StartButton.Content = "Stop";
-
-							KC2HandsFreeMouse.SetEnableClick(config.IsEnableClick);
-							if (config.IsEnableClick)
-							{
-								ShowMouseClickController();
-							}
-						}
-					}
-					else
-					{
-						string messageBoxText = "可動域を設定して下さい。";
-						string caption = "メッセージ";
-						MessageBoxButton button = MessageBoxButton.OK;
-						MessageBoxImage icon = MessageBoxImage.Warning;
-						MessageBoxResult result;
-
-						result = MessageBox.Show(messageBoxText, caption, button, icon, MessageBoxResult.Yes);
-						Console.WriteLine("wlwlwlwl");
-					}
-				}else{
-					string messageBoxText = "カメラを設定して下さい。";
-					string caption = "メッセージ";
-					MessageBoxButton button = MessageBoxButton.OK;
-					MessageBoxImage icon = MessageBoxImage.Warning;
-					MessageBoxResult result;
-
-					result = MessageBox.Show(messageBoxText, caption, button, icon, MessageBoxResult.Yes);
-				}
-				//if (VideoCaptureDevice.StartHandsFreeMouse(CaptureView.GetVideoCaptureDevice(),0) == 1)
-				//{
-				//	StartButton.Content = "Stop";
-				//}
+				StartHansFreeMouse();
 			}
         }
 
@@ -200,7 +169,60 @@ namespace KC2.Pages
 			}
 
 		}
+		public void StartHansFreeMouse(){
+			var config = ((App)Application.Current).SaveData;
 
+			if (CaptureDevice.IsOpened)
+			{
+
+
+				if (CaptureDevice.GetID().Equals(config.FaceRangeDeviceID))
+				{
+
+					StartButtonContent.Visibility = Visibility.Hidden;
+					StopButtonContent.Visibility = Visibility.Visible;
+					CaptureDevice.StartHandsFreeMouse();
+					if (KC2HandsFreeMouse.IsActive)
+					{
+
+						//							StartButton.Content = "Stop";
+
+						KC2HandsFreeMouse.SetEnableClick(config.IsEnableClick);
+						if (config.IsEnableClick)
+						{
+							ShowMouseClickController();
+						}
+					}
+				}
+				else
+				{
+					string messageBoxText = "可動域を設定して下さい。";
+					string caption = "メッセージ";
+					MessageBoxButton button = MessageBoxButton.OK;
+					MessageBoxImage icon = MessageBoxImage.Warning;
+					MessageBoxResult result;
+
+					result = MessageBox.Show(messageBoxText, caption, button, icon, MessageBoxResult.Yes);
+					Console.WriteLine("wlwlwlwl");
+				}
+
+			}
+			else
+			{
+				string messageBoxText = "カメラを設定して下さい。";
+				string caption = "メッセージ";
+				MessageBoxButton button = MessageBoxButton.OK;
+				MessageBoxImage icon = MessageBoxImage.Warning;
+				MessageBoxResult result;
+
+				result = MessageBox.Show(messageBoxText, caption, button, icon, MessageBoxResult.Yes);
+			}
+			//if (VideoCaptureDevice.StartHandsFreeMouse(CaptureView.GetVideoCaptureDevice(),0) == 1)
+			//{
+			//	StartButton.Content = "Stop";
+			//}
+
+		}
 		public void StopHansFreeMouse(){
 			CaptureDevice.ReleaseHandsFreeMouse();
 			if (MouseClickControllerDialog != null)
@@ -208,7 +230,8 @@ namespace KC2.Pages
 				MouseClickControllerDialog.Close();
 				MouseClickControllerDialog = null;
 			}
-			StartButton.Content = "Start";
+			StartButtonContent.Visibility = Visibility.Visible;
+			StopButtonContent.Visibility = Visibility.Hidden;
 		}
 
 		public void SetActiveWindow(){

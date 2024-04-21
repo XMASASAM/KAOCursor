@@ -15,7 +15,7 @@ namespace kc2 {
 	};
 
 	class Tracker_Face :public Tracker_Base {
-		const std::string model_path = "C:\\Users\\MaMaM\\source\\repos\\KC2\\KC2NativeProject\\face_detection_yunet_2023mar.onnx";
+		const std::string model_path = ".\\face_detection_yunet_2023mar.onnx";
 		int cw;
 		int ch;
 		cv::Ptr<cv::FaceDetectorYN> yn_ptr;
@@ -48,6 +48,23 @@ namespace kc2 {
 
 
 	class Tracker_Blob :public Tracker_Base {
+		struct Seal{
+			Rect rect;
+			Point2d center;
+			double brightness;
+			double area;
+		};
+		Seal target_seal;
+		Rect crop_rect;
+		double get_max_area(Mat bmat);
+		bool is_first = true;
+		bool is_tracking = false;
+		bool find_seals(Mat mat, vector<Seal>* seal_list);
+		bool update_seal(Mat mat,Rect& crop ,Seal* s);
+		cv::Point2d point;
+		cv::Point2d del;
+		Point2d del_prev;
+		double threshold_prev=0;
 	public:
 		bool input(Mat mat);
 		Point2d get_point();
@@ -55,7 +72,7 @@ namespace kc2 {
 		void draw_ui(Mat mat);
 		void release();
 	};
-
+	cv::Rect rect_resize(cv::Rect rect, float s);
 namespace Tracker {
 	void init(int cap_width,int cap_height,int max_p);
 	bool input(Mat mat, int64_t interval);
@@ -66,5 +83,7 @@ namespace Tracker {
 	void draw_ui(Mat mat);
 	void release();
 	bool detect_mono(Mat mat,int64_t interval);
+	void set_enable_inff(bool flg);
+
 }
 }

@@ -69,13 +69,13 @@ namespace KC2NativeWrapper
 		}
 
 		public void SetDefault(){
-			LowPathRate = .9;
+			LowPathRate = .1;
 			DetectStayPixelThresholdPow2 = 4.0;
 			DetectStayMillisecondTimeThreshold = 1000;
 			CursorMovePixelThreshold = .4;
-			CursorMoveMultiplier = 8;
+			CursorMoveMultiplier = 1;
 			CursorMoveXFactor = 1.0;
-			CursorMoveYFactor = 1.2;
+			CursorMoveYFactor = 1.0;
 			DetectCursorStayMillisecondTimeThreshold = 500;
 			NumTrackPoint = 30;
 			FlagDrawUILayout = 1;
@@ -145,10 +145,26 @@ namespace KC2NativeWrapper
 
 		[DllImport(DLLNAME)]
 		static extern int kc2np_hansfreemouse_detect_rampaning();
-		static public bool IsActive{ get;private set; }
+
+		[DllImport(DLLNAME)]
+		static extern void kc2np_hansfreemouse_set_enable_infraredtracker(int flg);
+
+
+		[DllImport(DLLNAME)]
+		static extern int kc2np_hansfreemouse_get_sccess_tracking();
+
+
+		[DllImport(DLLNAME)]
+		static extern int kc2np_hansfreemouse_get_flg_setting_range();
+		
+
+
+			static public bool IsActive{ get;private set; }
 
 		static public bool StartHansFreeMouse(F4MVideoCapture cap, int track_points, int is_setting_range)
 		{
+			SetFlagSettingRange(is_setting_range);
+			if (IsActive) return true;
 			IsActive = kc2np_F4MVideoCapture_start_hansfreemouse(cap.cap, track_points, is_setting_range) == 1;
 			return IsActive;
 		}
@@ -227,8 +243,20 @@ namespace KC2NativeWrapper
 			kc2np_hansfreemouse_set_flg_setting_range(flg);
 		}
 
+		public static bool GetFlagSettingRange(){
+			return kc2np_hansfreemouse_get_flg_setting_range()==1;
+		}
+
 		public static bool DetectRampaging(){
 			return kc2np_hansfreemouse_detect_rampaning()==1;
+		}
+
+		public static void SetEnableInfraredTracker(int flg){
+			kc2np_hansfreemouse_set_enable_infraredtracker(flg);
+		}
+
+		public static bool GetSuccessTracking(){
+			return kc2np_hansfreemouse_get_sccess_tracking() == 1;
 		}
 
 	}

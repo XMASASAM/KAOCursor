@@ -22,5 +22,6 @@
 	<BitmapImage x:Key="IFaceRange" UriSource="FaceRangeIcon.png"/>
 	<BitmapImage x:Key="IGear" UriSource="GearIcon.png"/>
 	<BitmapImage x:Key="IPlay" UriSource="PlayIcon.png"/>
+	<BitmapImage x:Key="IStop" UriSource="StopIcon.png"/>
 
 </ResourceDictionary>

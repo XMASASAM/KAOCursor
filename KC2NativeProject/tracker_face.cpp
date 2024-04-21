@@ -84,21 +84,13 @@ namespace kc2 {
 		return true;
 	}
 
-	cv::Rect rect_resize(cv::Rect rect, float s) {
-		int cx = rect.x + (rect.width) / 2;
-		int cy = rect.y + (rect.height) / 2;
-		int w = rect.width * s;
-		int h = rect.height * s;
-		int x = cx - w / 2;
-		int y = cy - h / 2;
-		return { x,y,w,h };
-	}
 
 kc2::Tracker_Face::Tracker_Face(int cap_width, int cap_height, int max_p) {
 	cw = cap_width;
 	ch = cap_height;
 	yn_ptr = cv::FaceDetectorYN::create(model_path, "", { cw,ch });
-	cas.load("C:\\Users\\MaMaM\\Documents\\Programs\\C++\\cascades\\haarcascade_mcs_nose.xml");
+//	cas.load("C:\\Users\\MaMaM\\Documents\\Programs\\C++\\cascades\\haarcascade_mcs_nose.xml");
+//	cas.load("C:\\Users\\MaMaM\\Documents\\Programs\\C++\\cascades\\haarcascade_mcs_nose.xml");
 }
 
 bool Tracker_Face::input(Mat mat) {
@@ -216,6 +208,7 @@ Point2d Tracker_Face::get_point() {
 }
 
 Point2d Tracker_Face::get_delta() {
+cout << "face_del" << del << endl;
 	return del;
 
 }

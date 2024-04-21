@@ -15,7 +15,7 @@ namespace KC2.DataStructs
 	public static class CaptureDevice
 	{
 
-		static int cap_index;
+		static int cap_index=-1;
 		static bool is_active_capture = false;
 		public static CaptureProperty Property{ get; private set; }
 		static F4MVideoCapture? cap;
@@ -112,6 +112,7 @@ namespace KC2.DataStructs
 
 		public static bool StartHandsFreeMouse(int is_range_setting = 0){
 			if (cap == null || !cap.IsOpened) return false ;
+			
 			return KC2HandsFreeMouse.StartHansFreeMouse(cap, 50, is_range_setting);
 		}
 

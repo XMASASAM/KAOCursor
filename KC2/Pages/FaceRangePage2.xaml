@@ -1,0 +1,26 @@
+﻿<Page x:Class="KC2.Pages.FaceRangePage2"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:KC2.Pages"
+      xmlns:cont="clr-namespace:KC2.Controls"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800" d:Background="White"
+      Title="FaceRangePage2">
+
+    <Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition/>
+			<RowDefinition Height="Auto"/>
+		</Grid.RowDefinitions>
+		<StackPanel>
+			<Label Content="Step2. 顔の可動域を設定します。"/>
+			<Button x:Name="StartButton" Content="可動域を設定する" Padding="10" Margin="10" Click="StartButton_Click"/>
+		</StackPanel>
+		<cont:CaptureDeviceView Grid.Row="1" />
+		<Button x:Name="NextButton" Grid.Row="2" HorizontalAlignment="Right" Content="次のステップへ" Padding="5" Margin="5" Click="Button_Click"/>
+		<Button x:Name="ReturnButton" Grid.Row="2" HorizontalAlignment="Left" Content="戻る" Padding="5" Margin="5" Click="ReturnButton_Click"/>
+	</Grid>
+</Page>

@@ -24,7 +24,7 @@
 			<Button x:Name="ReturnButton" Grid.Column="0" Content="戻る"  Click="ReturnButton_Click"/>
 
 			<Label Grid.Column="1" Content="可動域設定"  VerticalAlignment="Center" HorizontalAlignment="Center"/>
-			<Button Grid.Column="2" x:Name="StartButton" Content="Start" Click="StartButton_Click"/>
+			<Button Grid.Column="2" x:Name="StartButton" Content="開始" Click="StartButton_Click"/>
 
 
 		</Grid>

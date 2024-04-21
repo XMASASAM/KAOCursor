@@ -21,6 +21,7 @@ namespace KC2
 		}
 		void ApplySaveData(){
 			KC2HandsFreeMouse.SetEnablePlaySE(Convert.ToInt16(SaveData.IsEnablePlaySE));
+			KC2HandsFreeMouse.SetEnableInfraredTracker(Convert.ToInt16(SaveData.IsEnableInfraredTracker));
 			KC2HandsFreeMouse.SetPropety(SaveData.HansFreeMouseProperty);
 
 			KC2HandsFreeMouse.ClearRangePoint();

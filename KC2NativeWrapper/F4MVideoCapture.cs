@@ -68,6 +68,8 @@ namespace KC2NativeWrapper
 		public void ChangeFlip(int angle, int hflip)
 		{
 			kc2np_F4MVideoCapture_change_flip(cap, angle, hflip);
+			prop.HorizonFlip = hflip;
+			prop.Angle = angle;
 		}
 
 

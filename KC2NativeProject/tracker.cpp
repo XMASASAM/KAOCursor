@@ -1,5 +1,16 @@
 #include"tracker.h"
 namespace kc2 {
+
+	cv::Rect rect_resize(cv::Rect rect, float s) {
+		int cx = rect.x + (rect.width) / 2;
+		int cy = rect.y + (rect.height) / 2;
+		int w = rect.width * s;
+		int h = rect.height * s;
+		int x = cx - w / 2;
+		int y = cy - h / 2;
+		return { x,y,w,h };
+	}
+
 	namespace Tracker {
 		bool is_first = true;
 		bool flg_blob_tracker=true;//blobtrackerƒAƒ‹ƒSƒŠƒYƒ€‚ð—˜—p‚·‚é‚©.
@@ -11,6 +22,7 @@ namespace kc2 {
 		int capture_height = 1;
 		int num_opt_point=1;
 		double div_count_detect_mono=0;
+		bool is_enable_inff=false;
 		void init(int cap_width, int cap_height, int max_p) {
 			capture_width = cap_width;
 			capture_height = cap_height;
@@ -22,14 +34,17 @@ namespace kc2 {
 		}
 		bool input(Mat mat, int64_t interval) {
 			bool is_mono; 
-
-			if ((100000 < interval || is_first ) && flg_blob_tracker) {
+			if(mat.rows!=capture_height || mat.cols!=capture_width){
+				is_first = true;
+				return false;
+			}
+			if ((50000 < interval || is_first ) && flg_blob_tracker) {
 				is_mono = detect_mono(mat, interval);
 			}
 			else {
 				is_mono = is_mono_prev;
 			}
-
+	//		is_mono = false;
 			
 			if (is_first) {
 				is_mono_prev = !is_mono;
@@ -101,6 +116,9 @@ namespace kc2 {
 			v*=div_count_detect_mono;
 			cout << "bunsan::" << v << endl;
 			return v <= 1;
+		}
+		void set_enable_inff(bool flg) {
+			flg_blob_tracker = flg;
 		}
 
 

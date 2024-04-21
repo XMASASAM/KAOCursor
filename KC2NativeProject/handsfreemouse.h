@@ -188,12 +188,15 @@ namespace kc2 {
 
 		Point2d cursor_lowpass_filter;
 		Point2d cursor_highpass_filter;
+		Point2d del_prev;
 		CountPS count_highpass;
 		bool is_rampaging=false;
 		double c_sin;
 		double c_cos;
 		bool is_flip=false;
 		bool is_enable_rotate=true;
+	//	bool is_first=true;
+		Point2d pos_on_screen{0,0};
 		Point2d vec_to_uvec(Point2d p) {
 			double d = sqrt( p.dot(p));
 			if(d==0)return{0,0};
@@ -211,80 +214,14 @@ namespace kc2 {
 
 		//return true is cursor move , false is cursor stay.
 		void input(Point2d pos_sensor, Point2d del_sensor, int64_t interval_micro,Mat mat) {
-//			set_mouse(500,500);
-			
 			if (is_first) {
-				stay_cursor_pos_on_screen = pos_sensor;
+				POINT p;
+				GetCursorPos(&p);
+				pos_on_screen = { (double)p.x,(double)p.y };
 				is_first = false;
 			}
-			
-			auto hdel = pos_sensor - stay_cursor_pos_on_screen;
 
-			auto hk = (abs(hdel.x) + abs(hdel.y)) / (abs(del_sensor.x) + abs(del_sensor.y));
-
-			Point2d del;
-			if(flg_move_xy!=0){
-				del = del_sensor*1.5;
-			}
-			else del = hdel;//del_sensor.dot(hdel) * del_sensor;
-			
-			del= {del.x * screen_from_sensor_k.x /30 , del.y * screen_from_sensor_k.y/30};
-
-
-
-
-
-			flg_move_xy=0;
-			double pix_th = hfm_prop.CursorMovePixelThreshold * (interval_micro / 66666.6);
-			if (abs(del.x) < pix_th){
-				del.x = 0;
-			}
-			else {
-				flg_move_xy|=1;
-				if (del.x < 0) {
-					del.x+=pix_th;
-				}
-				else {
-					del.x-=pix_th;
-				}
-			}
-
-			if(abs(del.y)<pix_th){
-				del.y=0;
-			}
-			else {
-				flg_move_xy|=2;
-				if (del.y < 0) {
-					del.y += pix_th;
-				}
-				else {
-					del.y -= pix_th;
-				}
-			}
-			
-			if (flg_move_xy) {
-				stay_cursor_pos_on_screen.x = pos_sensor.x;
-				stay_cursor_pos_on_screen.y = pos_sensor.y;
-			}
-
-			del*=hfm_prop.CursorMoveMultiplier;
-
-			del.x *= hfm_prop.CursorMoveXFactor;
-			del.y *= hfm_prop.CursorMoveYFactor;
-
-			if (abs(del.x) < .6)del.x = 0;
-			if(abs(del.y)<.6)del.y=0;
-
-			double del_abs = abs(del.x) + abs(del.y);
-			double del_sen = abs(del_sensor.x) + abs(del_sensor.y);
-			del_sensor*=sqrt( vec_to_dis_pow2(del) / vec_to_dis_pow2(del_sensor) );
-			del = del_sensor;
-
-			auto max_thre = hfm_prop.DetectStayPixelThresholdPow2 * screen_from_sensor_k/30 * hfm_prop.CursorMoveMultiplier;
-			max_thre*=hfm_prop.CursorMoveXFactor;
-			max_thre*=hfm_prop.CursorMoveYFactor;
-			is_rampaging = DetectRampaging::input(del,max(screen_width,screen_height));
-
+			auto del = del_sensor;
 			if (is_enable_rotate) {
 				auto temp = del;
 				del.x = temp.x * c_cos - temp.y * c_sin;
@@ -293,121 +230,73 @@ namespace kc2 {
 			}
 			if (is_flip)del.x = -del.x;
 
-			mouse_event(MOUSEEVENTF_MOVE, del.x, del.y, NULL, NULL);
-			/*
-			//cout << interval << endl;
-			double ts = interval_micro / 1e6;
+			auto del_r = del;
 
-			POINT pos_current_screen;
-			GetCursorPos(&pos_current_screen);
-			if (pos_send_screen.x != pos_current_screen.x || pos_send_screen.y != pos_current_screen.y) {
-			//	pos_cursor_screen.x = pos_current_screen.x;
-			//	pos_cursor_screen.y = pos_current_screen.y;
-			//	del_lowpass_sensor = del_sensor;
+
+
+			auto del_s = del_sensor * (1000000.0 / interval_micro);
+			double minsize = (sensor_width + sensor_height)*.5;
+			del_s.x *= 1.0 / minsize;
+			del_s.y *= 1.0 / minsize;
+			del_s.x = abs(del_s.x);
+			del_s.y = abs(del_s.y);
+			Point2d del_k = { max(.0, min(1.0, abs(del_s.x)))  ,max(.0 , min(1.0, abs(del_s.y))) };
+		//	Point2d del_k2 = {1,1};//{max(.5, min(1.0, abs(del_s.x)))  ,max(.5 , min(1.0, abs(del_s.y)))};
+			if (del_s.x < 1) {
+			//	del.x*=del_s.x;
+			}
+			if (del_s.y < 1) {
+			//	del.y*=del_s.y;
+			}
+			
+			cout << "del_k::" << del_k << endl;
+
+			if (vec_to_dis_pow2(del_k) < 0.02) {
+				del_k.x=0;//del.x = del.x* .1;// + del_prev.x * (1.0 - .6);
+				del_k.y=0;//del.y = del.y* .1;// + del_prev.y * (1.0 - .6);
+				cout << "del_zero2" << endl;
 			}
 
-			if (is_first) {
-				is_first = false;
-				pos_cursor_screen.x = pos_current_screen.x;
-				pos_cursor_screen.y = pos_current_screen.y;
-			}
-
-			auto pos_cursor_screen_prev = pos_cursor_screen;
-
-
-			//del_lowpass_sensor = del_lowpass_sensor * .4 + del_sensor * .6;
-			//double pow2_del = acc_sensor.x * acc_sensor.x + acc_sensor.y * acc_sensor.y;
-			Point2d acc_sensor_ts = acc_sensor / ts;
-			Point2d pow2_del ={abs( acc_sensor_ts.x ), abs(acc_sensor_ts.y)};
-			double k_del = max(screen_from_screen_k.x, screen_from_screen_k.y)/12.0;//max(1.0, pow2_del.dot(screen_from_screen_k)*.01);//min(10.0, max(sensor_move_threshold_k, pow2_del));
-
-			auto pos_add = del_sensor * k_del;
-
-
-			if (abs(pos_add.x) < .8) {
-				pos_add.x = 0;
-			}
-
-			if (abs(pos_add.y) < .8){
-				pos_add.y = 0;
-			}
-
-			pos_add *= 5;
-
-			pos_add.x = -pos_add.x;
-
-			pos_cursor_screen += pos_add;
-
-			//putText(mat, to_string(k_del), { 0,60 }, 0, 1, { 0,0,255 });
-			//putText(mat, to_string(screen_from_screen_k.x), { 0,90 }, 0, 1, { 0,0,255 });
-			//putText(mat, to_string(ts), { 0,120 }, 0, 1, { 0,0,255 });
+			del.x = del.x * del_k.x + del_prev.x * (1.0 - del_k.x);
+			del.y = del.y * del_k.y + del_prev.y * (1.0 - del_k.y);
+			del_prev = del;
 
 
 
-			Point2d pos_del;
-			//GetCursorPos(&pos_current_screen);
-			//pos_del.x = pos_cursor_screen.x - pos_current_screen.x;
-			//pos_del.y = pos_cursor_screen.y - pos_current_screen.y;
 
-			pos_del.x = pos_cursor_screen.x - pos_cursor_screen_prev.x;
-			pos_del.y = pos_cursor_screen.y - pos_cursor_screen_prev.y;
+			del = { 
+				del.x * screen_from_sensor_k.x * del_k.x, 
+				del.y * screen_from_sensor_k.y * del_k.y 
+			};
+			cout << "del::" << del << endl;
+			//if (abs(del.x) < .6)del.x = 0;
+			//if(abs(del.y)<.6)del.y=0;
 
-			double speed_pow2 = pos_del.dot(pos_del);
+			//del = { del.x * screen_from_sensor_k.x, del.y * screen_from_sensor_k.y};
 
-			if (is_set_ok) {
-
-
-
-				Point2d v1,v2;
-				double d1,d2;
-				v1 = pos_sensor - op;
-				d1 =std::max(-1.0, std::min( 1.0 , v1.dot(uaxis[0]) / absaxis[0] )  );
-				d2 =std::max(-1.0, std::min( 1.0 , v1.dot(uaxis[1]) / absaxis[1] )  );
-
-				auto offx = d1 * (screen_rect.right - screen_rect.left) * .5;
-				auto offy = d2 * (screen_rect.bottom - screen_rect.top) *.5;
-
-				Point2d sct;
-				sct.x = offx + sop.x;
-				sct.y = offy + sop.y;
-				auto sct_del = sct - pos_cursor_screen_prev;
-				//auto udel = vec_to_uvec(pos_del);
-
-				double sct_k =max(1.0, pos_del.dot(sct_del) / pos_del.dot(pos_del));
-				sct_del = pos_del * sct_k;
-				//double sct_k =min( max(1.0,speed_pow2) , sct_max_k );
-				//pos_del =sct_del;//sct_max_k;
-//				pos_cursor_screen.x = t.x;
-//				pos_cursor_screen.y = t.y;
-				
-				
-				Point2d kxy{ 1 / sensor_width  ,1 / sensor_height };
-
-				auto del_s = del_sensor / ts;
-				del_s.x*=kxy.x;
-				del_s.y*=kxy.y;
-
-				double del_abs =min(1.0,abs(del_s.x + del_s.y)*.05);
-				pos_del = pos_del * (1 - del_abs) + sct_del * del_abs;
-				
-				putText(mat, to_string(del_abs), { 0,30 }, 0, 1, { 0,0,255 });
-				//putText(mat, to_string(del_abs.y), { 0,60 }, 0, 1, { 0,0,255 });
-
-			}
-			//imshow("qqqqq", mat);
-			//waitKey(1);
-			pos_send_screen.x = pos_cursor_screen.x;
-			pos_send_screen.y = pos_cursor_screen.y;
-
-		
-			pos_cursor_screen.x = pos_cursor_screen_prev.x + pos_del.x;
-			pos_cursor_screen.y = pos_cursor_screen_prev.y + pos_del.y;
-
-
+//			del.x = del_sensor.x * screen_from_sensor_k.x;//del.x * del_k.x + del_prev.x * (1.0 - del_k.x);
+	//		del.y = del_sensor.y * screen_from_sensor_k.y;//del.y * del_k.y + del_prev.y * (1.0 - del_k.y);
+		//	del_prev = del;
 			
 
-			mouse_event(MOUSEEVENTF_MOVE, pos_del.x, pos_del.y, NULL, NULL);
-			*/
+			del *= hfm_prop.CursorMoveMultiplier;
+			del.x *= hfm_prop.CursorMoveXFactor;
+			del.y *= hfm_prop.CursorMoveYFactor;
+
+			del = del_r * sqrt(vec_to_dis_pow2(del) / vec_to_dis_pow2(del_sensor));
+
+
+			//SetCursorPos(0,0);
+			pos_on_screen+=del;
+			pos_on_screen.x = max(0.0, min(pos_on_screen.x, screen_width-1));
+			pos_on_screen.y = max(0.0,min(pos_on_screen.y , screen_height-1));
+			cout << "del::" << del << endl;
+
+
+
+
+			SetCursorPos(pos_on_screen.x,pos_on_screen.y);
+		
 		}
 
 
@@ -466,18 +355,20 @@ namespace kc2 {
 				auto as = uaxis[KC2_HFM_AXIS_Y].dot({ 1,0 });
 				auto ds = 180 * acos(as) / 3.14;
 				auto move_degree = 90 - ds;
+				
 				if (uaxis[KC2_HFM_AXIS_Y].y < 0) {
-					move_degree-=180;
+					move_degree = 90 + ds;
 				}
+				
 				cout << "x:" << axis[KC2_HFM_AXIS_X] << endl;
 				cout << "y:" << axis[KC2_HFM_AXIS_Y] << endl;
 				cout << "move_degr1ee;;" << move_degree << endl;
-
+				//move_degree = -move_degree;
 				c_sin = sin(3.14 * move_degree / 180);
 				c_cos = cos(3.14 * move_degree/180);
-				if (abs(move_degree)<5) {
+				/*if (abs(move_degree)<5) {
 					is_enable_rotate = false;
-				}
+				}*/
 				/*
 				Point2d v3 ={ -axis[KC2_HFM_AXIS_X].y, axis[KC2_HFM_AXIS_X].x};
 				d1 = v3.dot(v1+v2);
@@ -507,13 +398,18 @@ namespace kc2 {
 
 				screen_width = screen_rect.right - screen_rect.left;
 				screen_height = screen_rect.bottom - screen_rect.top;
-				sensor_width = absaxis[0] * 2;
-				sensor_height = absaxis[1] * 2;
+				sensor_width =min(abs( vec_to_dis(range[0] - range[1]) ),abs( vec_to_dis(range[3] - range[2]))); //absaxis[0] * 2;
+				//sensor_width = vec_to_dis();//absaxis[0] * 2;
+				sensor_height = min(abs(vec_to_dis(range[3] - range[0])), abs(vec_to_dis(range[2] - range[1]))); //absaxis[0] * 2;
+
+				//sensor_height =vec_to_dis((range[3] - range[0] + range[2] - range[1]) * .5);//absaxis[1] * 2;
+				//sensor_height = absaxis[1] * 2;
 
 				screen_size = {screen_width , screen_height};
-				sensor_size = {sensor_width , screen_height};
-
-				screen_from_sensor_k = {screen_width / sensor_width , screen_height / sensor_height};
+				sensor_size = {sensor_width , sensor_height};
+				//double mm = max(screen_width / sensor_width, screen_height / sensor_height);
+				screen_from_sensor_k = { screen_width / sensor_width , screen_height / sensor_height };
+				//screen_from_sensor_k = {min(screen_from_sensor_k.x,screen_from_sensor_k.y) ,min(screen_from_sensor_k.x,screen_from_sensor_k.y) };//screen_width / sensor_width , screen_height / sensor_height};
 
 				is_set_ok = true;
 				//MessageBoxW(0, to_wstring(absaxis[0]).c_str(), L"q", 0);
@@ -537,9 +433,11 @@ namespace kc2 {
 		}
 
 		void draw_ui(Mat mat) {
+			Point2d center{0,0};
 			for (int i = 0; i < 4; i++) {
 				if (flg_range & (1 << i)) {
 					circle(mat, range[i], 5, { 185,218,255 }, -1);
+					center+=range[i];
 				}
 			}
 
@@ -548,12 +446,89 @@ namespace kc2 {
 				auto v2 = axis[1];// - op;
 				line(mat, op - v1, op + v1, { 0,255,0 }, 2);
 				line(mat,op - v2,op + v2,{0,255,0},2);
+
+				center *= .25;
+				for (int i = 0; i < 4; i++) {
+					
+					auto del = range[i] - center;
+					if (is_enable_rotate) {
+						auto temp = del;
+						del.x = temp.x * c_cos - temp.y * c_sin;
+						del.y = temp.x * c_sin + temp.y * c_cos;
+
+					}
+					if (is_flip)del.x = -del.x;
+
+					circle(mat, del + center, 5, { 185,0,255 }, -1);					
+				}
+
+
+
+
+
 			}
 
 		}
 
 	};
+	namespace DetectMovePyhsicsMouse {
+		kc2::timer time;
+		kc2::timer start_time;
+		bool is_first = true;
+		bool is_moved = false;
+		POINT pos_prev;
+		bool input(Point2d pos_on_screen) {
+			POINT p;
+			GetCursorPos(&p);
 
+			if (is_first) {
+				pos_prev = p;
+				start_time.start();
+				is_first = false;
+			}
+			if (start_time.elapsed() < 2000) {
+				return false;
+			}
+
+
+			//Point2d d={pos_on_screen.x - p.x , pos_on_screen.y - p.y};
+			printf("cursor hikaku:: screen x:%d y:%d    soft x:%lf y:%lf\n", p.x, p.y, pos_on_screen.x, pos_on_screen.y);
+			Point2d dis = pos_on_screen;
+			dis.x -= p.x;
+			dis.y -= p.y;
+			double d = dis.x * dis.x + dis.y * dis.y;
+
+			dis = { (double)p.x , (double)p.y };
+			dis.x -= pos_prev.x;
+			dis.y -= pos_prev.y;
+			d = min(d, dis.x * dis.x + dis.y * dis.y);
+
+
+			pos_prev = p;
+
+			if (25.0 <= d) {
+				time.start();
+				is_moved = true;
+				return true;
+			}
+			if (is_moved) {
+
+				if (time.elapsed() < 2000) {
+					return true;
+				}
+
+			}
+
+			is_moved = false;
+			return false;
+		}
+
+		void release() {
+			is_first = true;
+			is_moved = false;
+		}
+
+	}
 	namespace DetectCursorStay {
 		kc2::timer time;
 		int64_t current=0;
@@ -571,7 +546,7 @@ namespace kc2 {
 
 				auto dis = dx * dx + dy * dy;
 
-				if (1<=dis) {
+				if (10<=dis) {
 					flg_move_cursor=true;
 				}
 				else {
@@ -579,6 +554,8 @@ namespace kc2 {
 				}
 
 			}
+			
+			if(DetectMovePyhsicsMouse::is_moved)flg_move_cursor=true;
 			
 
 			if ((flg_move_cursor || is_first)) {
@@ -612,6 +589,7 @@ namespace kc2 {
 	}
 
 
+
 	namespace hfm {
 		
 		//kc2::Tracker* tr;
@@ -626,6 +604,7 @@ namespace kc2 {
 		bool is_new_frame = false;
 		bool is_first = true;
 		bool is_enable_click = true;
+		bool is_tracking_sccess=false;
 		//Mat current_mat;
 		//Mat out_mat;
 		ShareFrame current_frame=nullptr;
@@ -685,8 +664,8 @@ namespace kc2 {
 				lock_guard lock(mtx);
 
 				//if(!kc2::Tracker::is_active())return;
-				
-				if(kc2::Tracker::input(mat,interval)){
+				is_tracking_sccess = kc2::Tracker::input(mat, interval);
+				if(is_tracking_sccess){
 //					auto low_pass_delta = LowPass::input(tr->get_delta());
 					auto low_pass_delta = LowPass::input(kc2::Tracker::get_delta());
 
@@ -696,10 +675,21 @@ namespace kc2 {
 
 					if (!hfm::is_setting_range) {
 						//CursorOperator::input(tr->get_point(), low_pass_delta, tr->get_acceleration(), interval, mat);
-						CursorOperator::input(kc2::Tracker::get_point(), low_pass_delta, interval, mat);
-						bool click = DetectCursorStay::input(CursorOperator::flg_move_xy);
-						if (is_enable_click) {
-							CursorClickEvent::input(flg_mouse_event,click);
+						if (CursorOperator::is_first == false && DetectMovePyhsicsMouse::input(CursorOperator::pos_on_screen)) {
+							printf("mouse move now\n");
+							//CursorOperator::release();
+							POINT p;
+							GetCursorPos(&p);
+							CursorOperator::pos_on_screen.x = p.x;
+							CursorOperator::pos_on_screen.y = p.y;
+							DetectCursorStay::input(1);
+						}
+						else {
+							CursorOperator::input(kc2::Tracker::get_point(), low_pass_delta, interval, mat);
+							bool click = DetectCursorStay::input(CursorOperator::flg_move_xy);
+							if (is_enable_click) {
+								CursorClickEvent::input(flg_mouse_event, click);
+							}
 						}
 					}
 
@@ -772,8 +762,10 @@ namespace kc2 {
 				out_frame.try_free();
 				current_frame.try_free();
 				DetectRampaging::release();
+				DetectMovePyhsicsMouse::release();
 			}
 			have_range = false;
+			hfm::is_tracking_sccess=false;
 			//flg_range = 0;
 		}
 
@@ -850,8 +842,22 @@ namespace kc2 {
 			hfm::is_setting_range = flg;
 		}
 
+		EXPORT int kc2np_hansfreemouse_get_flg_setting_range() {
+			return hfm::is_setting_range;
+		}
+
+
 		EXPORT int kc2np_hansfreemouse_detect_rampaning() {
 			return CursorOperator::is_rampaging;
+		}
+
+
+		EXPORT void kc2np_hansfreemouse_set_enable_infraredtracker(int flg) {
+			Tracker::set_enable_inff(flg);
+		}
+
+		EXPORT int kc2np_hansfreemouse_get_sccess_tracking() {
+			return hfm::is_tracking_sccess;
 		}
 
 	}

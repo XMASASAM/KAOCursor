@@ -83,6 +83,7 @@ namespace KC2.DataStructs
 		public bool IsEnableClick{ get; set; }
 		public bool IsEnableShowCircleProgressBar{ get; set; }
 		public bool IsEnablePlaySE { get; set; }
+		public bool IsEnableInfraredTracker{ get; set; }
 
 		public Win32Mouse.Win32RECT ScreenRect{ get; set; }
 		public Vec2d[] FaceRange{ get; set; }
@@ -92,17 +93,26 @@ namespace KC2.DataStructs
 
 		public string FaceRangeDeviceID{ get; set; }
 
+		public bool NeedTutorial { get; set; }
 
 		public void SetDefault(){
 			DeviceName = string.Empty;
 			DevicePath = string.Empty;
 			CaptureProperty = new CaptureProperty();
 			IsEnableClick = true;
+			NeedTutorial = true;
+			IsEnableShowCircleProgressBar = true;
+			IsEnablePlaySE = true;
+			IsEnableInfraredTracker = false;
 			HansFreeMouseProperty = new HansFreeMouseProperty();
 		}
 
 		static SaveData(){
-			SavePath = "C:\\Users\\MaMaM\\OneDrive\\デスクトップ\\kc2_savedata\\savedata.kc2savedata";
+			SavePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\KAOCursor";
+			if (!Directory.Exists(SavePath)) {
+				Directory.CreateDirectory(SavePath);
+			}
+			SavePath += "\\savedata.kc2savedata";
 		}
 
 		public string ToJsonString()

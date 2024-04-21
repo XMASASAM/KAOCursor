@@ -34,10 +34,17 @@
 				</Grid>
 
 				<Button x:Name="StartButton" Grid.Column="0" Click="StartButton_Click">
-					<StackPanel>
-						<Label Content="開始" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
-						<Image Source="{StaticResource IPlay}" Height="{Binding ElementName=b2,Path=ActualHeight}"/>
-					</StackPanel>
+					<Grid>
+						<StackPanel x:Name="StartButtonContent">
+							<Label Content="開始" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
+							<Image Source="{StaticResource IPlay}" Height="{Binding ElementName=b2,Path=ActualHeight}"/>
+						</StackPanel>
+						<StackPanel x:Name="StopButtonContent" Visibility="Hidden">
+							<Label Content="停止" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
+							<Image Source="{StaticResource IStop}" Height="{Binding ElementName=b2,Path=ActualHeight}"/>
+						</StackPanel>
+					</Grid>
+
 				</Button>
 				<Button x:Name="RangeButton" Grid.Column="1" Click="RangeButton_Click">
 

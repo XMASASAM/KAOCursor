@@ -26,6 +26,9 @@ namespace KC2.Dialogs
 		bool flg_first_click = true;
 		bool flg_second_stay = true;
 		MouseClickController Controller;
+		long second_time_limit = 2000;
+		long second_time_limit_offset;
+
 		public StayProgressBar(MouseClickController controller)
 		{
 			InitializeComponent();
@@ -55,19 +58,25 @@ namespace KC2.Dialogs
 				if(flg_first_click){
 					Controller.CallClickCursorEvent();
 					flg_first_click=false;
+					second_time_limit_offset = stay_time;// + second_time_limit;
 				}
 			}
 			else
 			{
 				bar.CColor = new SolidColorBrush(Colors.Red);
 				flg_first_click = true;
+				bar2.SetProgress(0.0);
 			}
 
-			if (2500 < stay_time)
-			{
 
+
+			if (second_time_limit_offset + second_time_limit < stay_time)
+			{
+				
 				if (flg_second_stay)
 				{
+					bar2.SetProgress(1.0);
+
 					Controller.CallMoveEvent(); 
 					flg_second_stay = false;
 
@@ -76,6 +85,13 @@ namespace KC2.Dialogs
 			else
 			{
 				flg_second_stay = true;
+
+				if(!flg_first_click){
+					double pg2 = (stay_time - second_time_limit_offset)/(double)second_time_limit;
+					bar2.SetProgress(Math.Min(pg2,1.0));
+
+				}
+
 			}
 
 			Topmost = false;
