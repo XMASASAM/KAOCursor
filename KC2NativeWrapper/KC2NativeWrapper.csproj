@@ -11,27 +11,7 @@
 		<Content Include="$(SolutionDir)$(Platform)\$(Configuration)\KC2NativeProject.dll">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
-		<Content Include="$(OpenCV_DIR)\x64\vc16\bin\opencv_world480.dll">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-		<Content Include="$(FFmpeg_DIR)\bin\avcodec-60.dll">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-		<Content Include="$(FFmpeg_DIR)\bin\avdevice-60.dll">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-		<Content Include="$(FFmpeg_DIR)\bin\avfilter-9.dll">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-		<Content Include="$(FFmpeg_DIR)\bin\avformat-60.dll">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-		<Content Include="$(FFmpeg_DIR)\bin\avutil-58.dll">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-		<Content Include="$(FFmpeg_DIR)\bin\swresample-4.dll">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
+
 	</ItemGroup>
 
 </Project>
