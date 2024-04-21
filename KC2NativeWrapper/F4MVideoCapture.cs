@@ -29,7 +29,7 @@ namespace KC2NativeWrapper
 		[DllImport(DLLNAME)]
 		static extern void kc2np_F4MVideoCapture_change_flip(IntPtr vc, int angle, int hflip);
 
-		internal IntPtr cap = 0;
+		internal IntPtr cap = IntPtr.Zero;
 		CaptureProperty prop;
 		int index = -1;
 		public bool IsOpened

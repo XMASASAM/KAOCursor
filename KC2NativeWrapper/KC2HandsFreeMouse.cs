@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using System.Windows;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace KC2NativeWrapper
 {
@@ -49,23 +48,23 @@ namespace KC2NativeWrapper
 	[StructLayout(LayoutKind.Sequential)]
 	public struct HansFreeMouseProperty
 	{
-		public double LowPathRate{ get; set; }
-		public double DetectStayPixelThresholdPow2 { get; set; }
-		public int DetectStayMillisecondTimeThreshold { get; set; }
-		public double CursorMovePixelThreshold { get; set; }
-		public double CursorMoveMultiplier { get; set; }
-		public double CursorMoveXFactor { get; set; }
-		public double CursorMoveYFactor { get; set; }
-		public int DetectCursorStayMillisecondTimeThreshold { get; set; }
-		public int NumTrackPoint { get; set; }
-		public int FlagDrawUILayout { get; set; }
-		public int MouseClickHoldMillisecondTime { get; set; }
-		public int MouseDoubleClickUnPressMillisecondTime { get; set; }
-		public int MouseWheelScrollAmount { get; set; }
-		public int MouseWheelScrollIntervalMillisecondTime { get; set; }
+		public double LowPathRate { get; set; } = .1;
+		public double DetectStayPixelThresholdPow2 { get; set; } = 4.0;
+		public int DetectStayMillisecondTimeThreshold { get; set; } = 1000;
+		public double CursorMovePixelThreshold { get; set; } = .4;
+		public double CursorMoveMultiplier { get; set; } = 1;
+		public double CursorMoveXFactor { get; set; } = 1.0;
+		public double CursorMoveYFactor { get; set; } = 1.0;
+		public int DetectCursorStayMillisecondTimeThreshold { get; set; } = 500;
+		public int NumTrackPoint { get; set; } = 30;
+		public int FlagDrawUILayout { get; set; } = 1;
+		public int MouseClickHoldMillisecondTime { get; set; } = 10;
+		public int MouseDoubleClickUnPressMillisecondTime { get; set; } = 50;
+		public int MouseWheelScrollAmount { get; set; } = 12;
+		public int MouseWheelScrollIntervalMillisecondTime { get; set; } = 5;
 
 		public HansFreeMouseProperty(){
-			SetDefault();
+			//SetDefault();
 		}
 
 		public void SetDefault(){
