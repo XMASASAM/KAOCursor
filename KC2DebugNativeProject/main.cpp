@@ -8,8 +8,9 @@ extern "C"{
 	int test_sound();
 	int test_sound2();
 	int test_sound10();
+	int test_sound11();
 }
 
 int main(void) {
-	test_sound10();
+	test_sound11();
 }

@@ -46,7 +46,7 @@ namespace KC2.Dialogs
 		}
 		void Update(object? sender, EventArgs e)
 		{
-			Win32Mouse.GetCursorPos(out var p);
+			var p = Win32Mouse.GetCursorPosOnScreen();
 			this.Left = p.X - ActualWidth * .5;
 			this.Top = p.Y - ActualHeight * .5;
 			var pg = KC2HandsFreeMouse.GetCursorClickProgress(out var stay_time);

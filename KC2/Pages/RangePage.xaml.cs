@@ -98,8 +98,8 @@ namespace KC2.Pages
 			if (ok){
 				var p = this.PointToScreen(new Point(0, 0));
 				sr = Win32Mouse.GetCurrentScreenRect((int)p.X, (int)p.Y).all;
-				config.ScreenRect = sr;
-				KC2HandsFreeMouse.SetScreenRect(sr);
+				config.ScreenRect = Win32Mouse.GetCurrentScreenRect((int)p.X, (int)p.Y, true).all; ;
+				KC2HandsFreeMouse.SetScreenRect(config.ScreenRect);
 				KC2HandsFreeMouse.ClearRangePoint();
 				ReturnButton.Opacity = .5;
 				StartButton.Opacity = .5;

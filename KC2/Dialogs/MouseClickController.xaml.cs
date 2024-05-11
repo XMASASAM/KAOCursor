@@ -3,6 +3,7 @@ using KC2.Pages;
 using KC2NativeWrapper;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Drawing;
 using System.Linq;
 using System.Media;
@@ -91,7 +92,7 @@ namespace KC2.Dialogs
 		bool DetectInsideMoveBorder()
 		{
 			if (!IsVisible) return false;
-			Win32Mouse.GetCursorPos(out var pos);
+			var pos = Win32Mouse.GetCursorPosOnMonitor();//Win32Mouse.GetCursorPos(out var pos);
 			var lt = MoveBorder.PointToScreen(new System.Windows.Point(0, 0));
 			var rb = MoveBorder.PointToScreen(new System.Windows.Point(MoveBorder.ActualWidth, MoveBorder.ActualHeight));
 			return (lt.X <= pos.X && pos.X < rb.X && lt.Y <= pos.Y && pos.Y < rb.Y);
@@ -104,7 +105,7 @@ namespace KC2.Dialogs
 			Topmost = true;
 			stayProgressBar.Topmost = true;
 			if (IsWindowMove){
-				Win32Mouse.GetCursorPos(out var pos);
+				var pos = Win32Mouse.GetCursorPosOnScreen();//.GetCursorPos(out var pos);
 				Left = pos.X - WindowOffset.X;
 				Top = pos.Y - WindowOffset.Y;
 			}
@@ -201,8 +202,8 @@ namespace KC2.Dialogs
 
 
 		void SetWindowWidth(double width_on_canvas,bool anim){
-			double s1 = Width - TagListView.ActualWidth;
-			double w = (canvas.PointToScreen(new System.Windows.Point(width_on_canvas, 0)).X) - Left + s1 / 2 + 1;
+			double s1 = ActualWidth - TagListView.ActualWidth;
+			double w =  width_on_canvas + s1 + 1;//(canvas.PointToScreen(new System.Windows.Point(width_on_canvas, 0)).X) - Left + s1 / 2 + 1;
 
 			if(anim)
 				SetChangeWidthAnime(w, 100);
@@ -306,7 +307,7 @@ namespace KC2.Dialogs
 		public void CallClickCursorEvent(){
 			//	ClickSound.Play();
 			if (IsInsideMoveBorder || IsActualInsideMoveBorder){
-				Win32Mouse.GetCursorPos(out var pos);
+				var pos = Win32Mouse.GetCursorPosOnScreen();
 				if (IsActualInsideMoveBorder){
 					IsWindowMove = !IsWindowMove;
 					WindowOffset.X = pos.X - Left;
@@ -350,7 +351,7 @@ namespace KC2.Dialogs
 			if( ((int)t&(int)KC2_MouseEvent.KC2_MouseEvent_Wheel)!=0 ){
 				return;
 			}
-			Win32Mouse.GetCursorPos(out var pos);
+			var pos = Win32Mouse.GetCursorPosOnScreen();
 			this.Left = pos.X;
 			this.Top = pos.Y;
 		}
@@ -384,6 +385,7 @@ namespace KC2.Dialogs
 			Canvas.SetTop(s, 0);
 			Canvas.SetLeft(s, ListWidth);
 			ListWidth += s.ActualWidth;
+			var ggg = s.Width;
 		//	canvas.Width = ListWidth;
 			//canvas.Height = s.ActualHeight;
 			ListHeight = Math.Max(ListHeight, s.ActualHeight);
@@ -434,7 +436,7 @@ namespace KC2.Dialogs
 		{
 			if (IsWindowMove) return;
 			IsWindowMove = true;
-			Win32Mouse.GetCursorPos(out var pos);
+			var pos = Win32Mouse.GetCursorPosOnScreen();
 			WindowOffset.X = pos.X - Left;
 			WindowOffset.Y = pos.Y - Top;
 		}

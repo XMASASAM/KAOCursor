@@ -127,6 +127,8 @@ EXPORT int test_sound() {
 
     bool is_finish = false;
     bool is_first = true;
+    int8_t* se_pcm_data = nullptr;
+    int se_pcm_data_len = 0;
     while(!is_finish){
 //        while (av_audio_fifo_size(fifo) < output_frame_size) {
             int ret_read;
@@ -149,9 +151,9 @@ EXPORT int test_sound() {
                            // printf("conv%d:%d\n", i, converted_input_samples[0][i]);
                       //  }
 
-                        /*WAVEHDR* wh = new WAVEHDR();
+/*                        WAVEHDR* wh = new WAVEHDR();
                         wh->lpData = (char*)converted_input_samples[0];
-                        wh->dwBufferLength = read_frame->nb_samples;//output_frame->linesize[0];
+                        wh->dwBufferLength = read_frame->nb_samples* wf.nBlockAlign;//output_frame->linesize[0];
                         wh->dwBytesRecorded = 0;
                         wh->dwUser = 0;
                         wh->dwFlags = 0;//flg;
@@ -160,13 +162,20 @@ EXPORT int test_sound() {
                         wh->reserved = 0;
                         result = waveOutPrepareHeader(hWaveOut, wh, sizeof(WAVEHDR));
 
-                        waveOutWrite(hWaveOut, wh, sizeof(WAVEHDR));
-                        */
+                        waveOutWrite(hWaveOut, wh, sizeof(WAVEHDR));*/
+                        
+                        int clen = read_frame->nb_samples * wf.nBlockAlign;
+                        se_pcm_data = (int8_t*)std::realloc(se_pcm_data, se_pcm_data_len + clen);//cbCurrentLength);
+                        std::memcpy(se_pcm_data + se_pcm_data_len, converted_input_samples[0], clen);
+                        se_pcm_data_len += clen;
+
+                        
+                        /*
                         ret = av_audio_fifo_realloc(fifo, av_audio_fifo_size(fifo) + read_frame->nb_samples);
                         if (av_audio_fifo_write(fifo, (void**)converted_input_samples, read_frame->nb_samples) < read_frame->nb_samples) {
                             std::cout << "Could not write data" << endl;
                             is_finish=true;
-                        }
+                        }*/
 
                        // ‰ð•ú.
                         if (converted_input_samples)
@@ -180,6 +189,20 @@ EXPORT int test_sound() {
 
             }
             if (ret_read < 0) {
+                WAVEHDR* wh = new WAVEHDR();
+                wh->lpData = (char*)se_pcm_data;
+                wh->dwBufferLength = se_pcm_data_len;//output_frame->linesize[0];
+                wh->dwBytesRecorded = 0;
+                wh->dwUser = 0;
+                wh->dwFlags = 0;//flg;
+                wh->dwLoops = 0;
+                wh->lpNext = NULL;
+                wh->reserved = 0;
+                result = waveOutPrepareHeader(hWaveOut, wh, sizeof(WAVEHDR));
+
+                waveOutWrite(hWaveOut, wh, sizeof(WAVEHDR));
+                std::this_thread::sleep_for(std::chrono::seconds(200));
+
                 is_finish=true;
             }
             while (output_frame_size <= av_audio_fifo_size(fifo) ||

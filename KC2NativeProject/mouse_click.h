@@ -1,7 +1,7 @@
 #pragma once
 #include<Windows.h>
 #include<thread>
-#include"soundeffect.h"
+#include"f4msoundeffect.h"
 //#include<mmstream.h>
 namespace kc2{
 
@@ -61,7 +61,7 @@ namespace CursorClickEvent {
 
 	};
 	void play_se() {
-		static sound::SoundEffect se(L"pc-mouse-3.mp3", 0);
+		static f4m::sound::SoundEffect se(L"pc-mouse-3.mp3", 0);
 		if(flg_enable_se)
 		se.play(1);
 	}

@@ -111,7 +111,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opencv_world480d.lib;strmiids.lib;avcodec.lib;avdevice.lib;avfilter.lib;avformat.lib;avutil.lib;swresample.lib;swscale.lib;WinMM.Lib;Mf.lib;mfplat.lib;Mfreadwrite.lib;mfuuid.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opencv_world480d.lib;strmiids.lib;avcodec.lib;avdevice.lib;avfilter.lib;avformat.lib;avutil.lib;swresample.lib;swscale.lib;WinMM.Lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OpenCV_DIR)\x64\vc16\lib;$(FFmpeg_DIR)\lib;</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -131,7 +131,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opencv_world480.lib;strmiids.lib;avcodec.lib;avdevice.lib;avfilter.lib;avformat.lib;avutil.lib;swresample.lib;swscale.lib;WinMM.Lib;Mf.lib;mfplat.lib;Mfreadwrite.lib;mfuuid.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opencv_world480.lib;strmiids.lib;avcodec.lib;avdevice.lib;avfilter.lib;avformat.lib;avutil.lib;swresample.lib;swscale.lib;WinMM.Lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OpenCV_DIR)\x64\vc16\lib;$(FFmpeg_DIR)\lib;</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -139,6 +139,7 @@
     <ClCompile Include="capture.cpp" />
     <ClCompile Include="f4ms2.cpp" />
     <ClCompile Include="f4msound.cpp" />
+    <ClCompile Include="f4msoundeffect.cpp" />
     <ClCompile Include="f4mvideocapture.cpp" />
     <ClCompile Include="d2.cpp" />
     <ClCompile Include="device.cpp" />
@@ -155,13 +156,13 @@
   <ItemGroup>
     <ClInclude Include="data_struct.h" />
     <ClInclude Include="device.h" />
+    <ClInclude Include="f4msoundeffect.h" />
     <ClInclude Include="f4mvideocapture.h" />
     <ClInclude Include="ffmpeg.h" />
     <ClInclude Include="handsfreemouse.h" />
     <ClInclude Include="kc2.h" />
     <ClInclude Include="mouse_click.h" />
     <ClInclude Include="shareframe.h" />
-    <ClInclude Include="soundeffect.h" />
     <ClInclude Include="timer.h" />
     <ClInclude Include="tracker.h" />
     <ClInclude Include="old_tracker_face.h" />
