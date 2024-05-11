@@ -1,4 +1,8 @@
+顔を動かしてパソコンのマウスカーソルを動かすソフトです。
+
+
 インストーラーはここからダウンロードしてね！
+
 https://github.com/XMASASAM/KAOCursor/releases
 
 「KAOCursorSetUp.msi」をダウンロードしてダブルクリックするとインストールが開始されるよ！
