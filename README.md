@@ -2,7 +2,7 @@
 
 ※ビルド・実行するにはOpenCVとFFmpegのlibファイルをリンクさせる必要があります。
 
-インストーラーはここからダウンロードしてね！
+インストーラはここからダウンロードしてね！
 
 https://github.com/XMASASAM/KAOCursor/releases
 
